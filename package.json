@@ -1,0 +1,29 @@
+{
+  "name": "@ngeenx/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "private": true,
+  "devDependencies": {
+    "@angular-devkit/core": "~21.2.7",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@commitlint/config-nx-scopes": "^20.5.0",
+    "@nx/angular": "22.6.5",
+    "@nx/eslint": "22.6.5",
+    "@nx/js": "22.6.5",
+    "@nx/react": "22.6.5",
+    "@nx/vue": "22.6.5",
+    "@nx/workspace": "22.6.5",
+    "eslint": "~10.2.1",
+    "husky": "^9.1.7",
+    "nx": "22.6.5"
+  },
+  "dependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "vue": "^3.5.33"
+  }
+}
