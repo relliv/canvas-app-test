@@ -12,9 +12,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border-default);
   color: var(--text-secondary);
+  pointer-events: auto;
 }
 
 .editor-title {
@@ -22,20 +23,131 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-right: auto;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border-default);
+  margin: 0 4px;
+}
+
+.fmt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background: var(--accent-primary);
+    color: #fff;
+  }
+
+  &--italic {
+    font-style: italic;
+  }
+
+  &--strike {
+    text-decoration: line-through;
+  }
 }
 
 .editor-content {
   flex: 1;
-  padding: 12px 14px;
-  background: transparent;
-  color: var(--text-primary);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 13px;
-  line-height: 1.6;
+  overflow-y: auto;
   pointer-events: auto;
   cursor: text;
 
-  &::placeholder {
-    color: var(--text-muted);
+  .tiptap {
+    padding: 12px 14px;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100%;
+
+    p {
+      margin: 0 0 0.5em;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    s {
+      text-decoration: line-through;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.5em;
+      margin: 0 0 0.5em;
+    }
+
+    li {
+      margin-bottom: 0.15em;
+    }
+
+    code {
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      padding: 0.15em 0.3em;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin: 0.5em 0;
+      overflow-x: auto;
+
+      code {
+        background: none;
+        padding: 0;
+        border-radius: 0;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    }
+
+    blockquote {
+      border-left: 3px solid var(--accent-primary);
+      padding-left: 12px;
+      margin: 0.5em 0;
+      color: var(--text-secondary);
+    }
+
+    .is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: var(--text-muted);
+      pointer-events: none;
+      height: 0;
+    }
   }
 }

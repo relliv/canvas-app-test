@@ -34,6 +34,14 @@ export class WorkspaceStateService {
 
   // Block CRUD
 
+  addBlockDirect(block: Block): void {
+    this._workspace.update((ws) => ({
+      ...ws,
+      blocks: { ...ws.blocks, [block.id]: block },
+      nextZIndex: Math.max(ws.nextZIndex, block.zIndex + 1),
+    }));
+  }
+
   addBlock(type: BlockType, position: Vector2): Block {
     const block = createDefaultBlock(
       type,

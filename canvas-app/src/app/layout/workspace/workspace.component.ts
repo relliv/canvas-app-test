@@ -13,6 +13,7 @@ import {
   PersistenceService,
   WorkspaceStateService,
   HistoryService,
+  ClipboardService,
 } from '@ngeenx/state';
 
 @Component({
@@ -32,6 +33,7 @@ export class WorkspaceComponent implements OnInit {
   private persistenceService = inject(PersistenceService);
   private workspaceState = inject(WorkspaceStateService);
   private historyService = inject(HistoryService);
+  private clipboardService = inject(ClipboardService);
 
   ngOnInit(): void {
     this.persistenceService.initialize();
@@ -76,6 +78,24 @@ export class WorkspaceComponent implements OnInit {
                 this.workspaceState.duplicateBlock(id);
               }
             }
+          }
+          break;
+        case 'c':
+          if (!isInput) {
+            event.preventDefault();
+            this.clipboardService.copy();
+          }
+          break;
+        case 'x':
+          if (!isInput) {
+            event.preventDefault();
+            this.clipboardService.cut();
+          }
+          break;
+        case 'v':
+          if (!isInput) {
+            event.preventDefault();
+            this.clipboardService.paste();
           }
           break;
         case 'a':
