@@ -1,0 +1,71 @@
+.block-frame {
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+  overflow: visible;
+  pointer-events: none;
+
+  &.selected {
+    border-color: var(--border-selected);
+  }
+
+  &.hovered:not(.selected) {
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+}
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-primary);
+  border-radius: 2px;
+  z-index: 10;
+  pointer-events: none;
+
+  &--nw {
+    top: -5px;
+    left: -5px;
+  }
+  &--ne {
+    top: -5px;
+    right: -5px;
+  }
+  &--sw {
+    bottom: -5px;
+    left: -5px;
+  }
+  &--se {
+    bottom: -5px;
+    right: -5px;
+  }
+}
+
+.connection-point {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-primary);
+  border-radius: 50%;
+  z-index: 10;
+  pointer-events: none;
+
+  &--top {
+    top: -6px;
+    left: calc(50% - 6px);
+  }
+  &--right {
+    top: calc(50% - 6px);
+    right: -6px;
+  }
+  &--bottom {
+    bottom: -6px;
+    left: calc(50% - 6px);
+  }
+  &--left {
+    top: calc(50% - 6px);
+    left: -6px;
+  }
+}

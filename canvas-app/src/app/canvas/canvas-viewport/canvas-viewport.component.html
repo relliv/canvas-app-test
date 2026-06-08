@@ -1,0 +1,16 @@
+<div #containerEl class="canvas-container">
+  <canvas #canvasEl class="canvas-layer"></canvas>
+
+  <div
+    class="overlay-layer"
+    [style.transform]="overlayTransform()"
+  >
+    @for (block of visibleBlocks(); track block.id) {
+      <cw-block-overlay
+        [block]="block"
+        [isSelected]="workspaceState.selectedBlockIds().has(block.id)"
+        [isHovered]="hoveredBlockId() === block.id"
+      />
+    }
+  </div>
+</div>

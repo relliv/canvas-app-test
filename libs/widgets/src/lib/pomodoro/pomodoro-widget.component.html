@@ -1,0 +1,50 @@
+<div class="pomodoro-container">
+  <div class="timer-header">
+    <span class="timer-label">{{ config.isBreak ? 'Break' : 'Focus' }}</span>
+    <span class="session-count">Session {{ config.completedSessions + 1 }}</span>
+  </div>
+
+  <div class="timer-ring-wrapper">
+    <svg class="timer-ring" viewBox="0 0 100 100">
+      <circle
+        class="ring-bg"
+        cx="50"
+        cy="50"
+        r="45"
+        fill="none"
+        stroke-width="4"
+      />
+      <circle
+        class="ring-progress"
+        cx="50"
+        cy="50"
+        r="45"
+        fill="none"
+        stroke-width="4"
+        stroke-linecap="round"
+        [attr.stroke-dasharray]="283"
+        [attr.stroke-dashoffset]="strokeDashoffset"
+        [class.is-break]="config.isBreak"
+      />
+    </svg>
+    <span class="timer-display">{{ displayTime }}</span>
+  </div>
+
+  <div class="timer-controls">
+    <button class="control-btn control-btn--primary" (click)="toggleTimer($event)">
+      {{ config.isRunning ? 'Pause' : 'Start' }}
+    </button>
+    <button class="control-btn" (click)="resetTimer($event)">
+      Reset
+    </button>
+  </div>
+
+  <div class="session-dots">
+    @for (dot of sessionDots; track dot) {
+      <span
+        class="dot"
+        [class.completed]="config.completedSessions >= dot"
+      ></span>
+    }
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<div
+  class="sticky-note"
+  [style.background-color]="config.backgroundColor"
+  [style.color]="config.textColor"
+>
+  <div class="color-picker">
+    @for (color of colorOptions; track color) {
+      <button
+        class="color-dot"
+        [style.background-color]="color"
+        [class.active]="config.backgroundColor === color"
+        (click)="onColorChange(color, $event)"
+      ></button>
+    }
+  </div>
+  <textarea
+    class="note-content"
+    [value]="config.text"
+    [style.color]="config.textColor"
+    (input)="onTextChange($event)"
+    (mousedown)="onMouseDown($event)"
+    placeholder="Type a note..."
+  ></textarea>
+</div>

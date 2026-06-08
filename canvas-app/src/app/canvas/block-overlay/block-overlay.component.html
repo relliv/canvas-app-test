@@ -1,0 +1,28 @@
+<div
+  class="block-frame"
+  [ngStyle]="blockStyles"
+  [class.selected]="isSelected"
+  [class.hovered]="isHovered"
+>
+  @if (showConnectionPoints) {
+    @for (point of block.connectionPoints; track point.id) {
+      <div
+        class="connection-point"
+        [class]="'connection-point connection-point--' + point.side"
+      ></div>
+    }
+  }
+
+  <cw-block-host [block]="block" />
+
+  @if (isSelected) {
+    <div class="resize-handle resize-handle--nw"></div>
+    <div class="resize-handle resize-handle--ne"></div>
+    <div class="resize-handle resize-handle--sw"></div>
+    <div class="resize-handle resize-handle--se"></div>
+  }
+
+  @if (showToolbar) {
+    <cw-block-toolbar [blockId]="block.id" />
+  }
+</div>
