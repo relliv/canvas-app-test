@@ -38,6 +38,8 @@ export class InputHandler {
   private dragStartPos: Vector2 = { x: 0, y: 0 };
   private hasDragged = false;
   private containerRect: DOMRect | null = null;
+  private panVelocity: Vector2 = { x: 0, y: 0 };
+  private lastPanTime = 0;
 
   constructor(
     private container: HTMLElement,
@@ -121,9 +123,15 @@ export class InputHandler {
         return;
       }
 
-      this.mode = 'panning';
-      this.container.setPointerCapture(e.pointerId);
-      this.container.style.cursor = 'grabbing';
+      if (e.shiftKey) {
+        this.mode = 'selecting';
+        this.container.setPointerCapture(e.pointerId);
+        this.callbacks.onSelectionStart(worldPos);
+      } else {
+        this.mode = 'panning';
+        this.container.setPointerCapture(e.pointerId);
+        this.container.style.cursor = 'grabbing';
+      }
     }
   };
 
@@ -138,12 +146,23 @@ export class InputHandler {
         break;
       }
       case 'panning': {
+        const now = performance.now();
         const delta: Vector2 = {
           x: screenPos.x - this.lastMousePos.x,
           y: screenPos.y - this.lastMousePos.y,
         };
+        const dt = now - this.lastPanTime;
+        if (dt > 0 && dt < 100) {
+          const mix = 0.3;
+          this.panVelocity = {
+            x: this.panVelocity.x * (1 - mix) + (delta.x / dt) * mix,
+            y: this.panVelocity.y * (1 - mix) + (delta.y / dt) * mix,
+          };
+        }
+        this.lastPanTime = now;
         this.callbacks.onPan(delta);
         this.lastMousePos = screenPos;
+        this.hasDragged = true;
         break;
       }
       case 'selecting':
@@ -170,7 +189,16 @@ export class InputHandler {
         this.container.style.cursor = this.isPanKeyHeld ? 'grab' : 'default';
         if (!this.hasDragged) {
           this.callbacks.onCanvasClick(worldPos);
+        } else {
+          const elapsed = performance.now() - this.lastPanTime;
+          if (elapsed < 80) {
+            this.viewport.fling({
+              x: this.panVelocity.x * 16,
+              y: this.panVelocity.y * 16,
+            });
+          }
         }
+        this.panVelocity = { x: 0, y: 0 };
         break;
       case 'selecting':
         if (!this.hasDragged) {

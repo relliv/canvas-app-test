@@ -15,3 +15,7 @@ export {
   type InputCallbacks,
   type InputMode,
 } from './lib/input/input-handler';
+export {
+  WidgetCanvasRenderer,
+  isCanvasRenderedType,
+} from './lib/renderer/widget-canvas-renderer';

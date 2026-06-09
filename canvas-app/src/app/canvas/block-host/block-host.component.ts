@@ -9,6 +9,7 @@ import {
 import { NgComponentOutlet } from '@angular/common';
 import { Block } from '@ngeenx/shared-models';
 import { WidgetRegistryService } from '@ngeenx/widgets';
+import { isCanvasRenderedType } from '@ngeenx/canvas-engine';
 
 @Component({
   selector: 'cw-block-host',
@@ -41,6 +42,7 @@ export class BlockHostComponent {
   private widgetRegistry = inject(WidgetRegistryService);
 
   readonly widgetComponent = computed(() => {
+    if (isCanvasRenderedType(this.block.type)) return null;
     return this.widgetRegistry.getComponent(this.block.type);
   });
 }
