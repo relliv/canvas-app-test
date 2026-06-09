@@ -1,0 +1,27 @@
+<div
+  class="context-backdrop"
+  (click)="onBackdropClick()"
+  (pointerdown)="onBackdropPointerDown($event)"
+  (contextmenu)="$event.preventDefault(); onBackdropClick()"
+></div>
+<div
+  class="context-menu"
+  [style.top.px]="y"
+  [style.left.px]="x"
+  (pointerdown)="$event.stopPropagation()"
+>
+  @for (item of items; track item.id) {
+    @if (item.divider) {
+      <div class="context-divider"></div>
+    } @else {
+      <button
+        class="context-item"
+        [class.danger]="item.danger"
+        [class.disabled]="item.disabled"
+        (click)="onItemClick(item)"
+      >
+        <span class="context-label">{{ item.label }}</span>
+      </button>
+    }
+  }
+</div>

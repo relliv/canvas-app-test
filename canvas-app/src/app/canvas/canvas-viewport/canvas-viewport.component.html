@@ -1,4 +1,4 @@
-<div #containerEl class="canvas-container">
+<div #containerEl class="canvas-container" (contextmenu)="onContextMenu($event)">
   <canvas #canvasEl class="canvas-layer"></canvas>
 
   <div
@@ -17,7 +17,30 @@
         (blockDragEnd)="onOverlayDragEnd()"
         (blockSelect)="onOverlaySelect($event)"
         (blockFocus)="onOverlayFocus($event)"
+        (blockContextMenu)="onBlockContextMenu($event)"
       />
     }
   </div>
 </div>
+
+@if (contextMenuOpen()) {
+  <cw-context-menu
+    [items]="contextMenuItems()"
+    [x]="contextMenuPos().x"
+    [y]="contextMenuPos().y"
+    (action)="onContextMenuAction($event)"
+    (close)="onContextMenuClose()"
+  />
+}
+
+@if (confirmDialogOpen()) {
+  <div class="confirm-backdrop" (click)="onConfirmDialogCancel()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <p class="confirm-message">{{ confirmDialogMessage() }}</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn confirm-btn--cancel" (click)="onConfirmDialogCancel()">Cancel</button>
+        <button class="confirm-btn confirm-btn--danger" (click)="onConfirmDialogAccept()">Delete</button>
+      </div>
+    </div>
+  </div>
+}

@@ -19,6 +19,12 @@
   &.hovered:not(.selected):not(.focused) {
     border-color: rgba(99, 102, 241, 0.3);
   }
+
+  &.is-frame {
+    pointer-events: none;
+    cursor: default;
+    border-color: transparent;
+  }
 }
 
 .content-shield {
@@ -26,6 +32,38 @@
   inset: 0;
   z-index: 1;
   border-radius: var(--radius-md);
+}
+
+.frame-edge {
+  position: absolute;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 2;
+
+  &--top {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+  &--bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+  &--left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 12px;
+  }
+  &--right {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+  }
 }
 
 .resize-handle {

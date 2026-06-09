@@ -22,13 +22,22 @@ import {
   InputCallbacks,
 } from '@ngeenx/canvas-engine';
 import { WorkspaceStateService, HistoryService } from '@ngeenx/state';
-import { Vector2, Rect, Block } from '@ngeenx/shared-models';
+import {
+  Vector2,
+  Rect,
+  Block,
+  createDefaultBlock,
+} from '@ngeenx/shared-models';
 import { ThemeService } from '../../services/theme.service';
+import {
+  ContextMenuComponent,
+  ContextMenuItem,
+} from '../context-menu/context-menu.component';
 
 @Component({
   selector: 'cw-canvas-viewport',
   standalone: true,
-  imports: [BlockOverlayComponent],
+  imports: [BlockOverlayComponent, ContextMenuComponent],
   templateUrl: './canvas-viewport.component.html',
   styleUrls: ['./canvas-viewport.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +61,7 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
   private dragStartBlockPos: Vector2 | null = null;
   private dragBlockId: string | null = null;
   private dragOffset: Vector2 = { x: 0, y: 0 };
+  private dragChildOffsets: { id: string; offset: Vector2 }[] = [];
   private selectionStart: Vector2 | null = null;
   private selectionRect = signal<Rect | null>(null);
 
@@ -68,6 +78,9 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
 
   readonly hoveredBlockId = signal<string | null>(null);
   readonly focusedBlockId = signal<string | null>(null);
+  readonly contextMenuOpen = signal(false);
+  readonly contextMenuPos = signal<Vector2>({ x: 0, y: 0 });
+  readonly contextMenuItems = signal<ContextMenuItem[]>([]);
 
   readonly visibleBlocks = computed(() => {
     const allBlocks = this.workspaceState.blocks();
@@ -78,13 +91,19 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
     const vpX = -vp.offset.x / zoom;
     const vpY = -vp.offset.y / zoom;
 
-    return Object.values(allBlocks).filter((block) => {
+    const visible = Object.values(allBlocks).filter((block) => {
       return !(
         block.position.x + block.size.width < vpX ||
         block.position.x > vpX + vpWidth ||
         block.position.y + block.size.height < vpY ||
         block.position.y > vpY + vpHeight
       );
+    });
+    return visible.sort((a, b) => {
+      const aFrame = a.type === 'frame' ? 0 : 1;
+      const bFrame = b.type === 'frame' ? 0 : 1;
+      if (aFrame !== bFrame) return aFrame - bFrame;
+      return a.zIndex - b.zIndex;
     });
   });
 
@@ -451,7 +470,8 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
 
   onOverlayDragStart(event: BlockDragEvent): void {
     this.historyService.pushSnapshot();
-    const block = this.workspaceState.blocks()[event.blockId];
+    const blocks = this.workspaceState.blocks();
+    const block = blocks[event.blockId];
     if (!block) return;
 
     if (!this.workspaceState.selectedBlockIds().has(event.blockId)) {
@@ -466,6 +486,22 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
       x: worldPos.x - block.position.x,
       y: worldPos.y - block.position.y,
     };
+
+    this.dragChildOffsets = [];
+    if (block.type === 'frame') {
+      for (const child of Object.values(blocks)) {
+        if (child.id === block.id || child.type === 'frame') continue;
+        if (this.isInsideFrame(child, block)) {
+          this.dragChildOffsets.push({
+            id: child.id,
+            offset: {
+              x: child.position.x - block.position.x,
+              y: child.position.y - block.position.y,
+            },
+          });
+        }
+      }
+    }
   }
 
   onOverlayDragMove(screenPos: Vector2): void {
@@ -476,11 +512,30 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
       y: worldPos.y - this.dragOffset.y,
     };
     this.workspaceState.moveBlock(this.dragBlockId, newPos);
+
+    for (const child of this.dragChildOffsets) {
+      this.workspaceState.moveBlock(child.id, {
+        x: newPos.x + child.offset.x,
+        y: newPos.y + child.offset.y,
+      });
+    }
   }
 
   onOverlayDragEnd(): void {
     this.dragBlockId = null;
     this.dragStartBlockPos = null;
+    this.dragChildOffsets = [];
+  }
+
+  private isInsideFrame(child: Block, frame: Block): boolean {
+    return (
+      child.position.x >= frame.position.x &&
+      child.position.y >= frame.position.y &&
+      child.position.x + child.size.width <=
+        frame.position.x + frame.size.width &&
+      child.position.y + child.size.height <=
+        frame.position.y + frame.size.height
+    );
   }
 
   onOverlaySelect(event: { blockId: string; shiftKey: boolean }): void {
@@ -494,6 +549,182 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
     if (!this.workspaceState.selectedBlockIds().has(blockId)) {
       this.workspaceState.selectBlock(blockId, false);
     }
+  }
+
+  onContextMenu(e: MouseEvent): void {
+    e.preventDefault();
+    const selectedIds = this.workspaceState.selectedBlockIds();
+    if (selectedIds.size === 0) return;
+
+    const items: ContextMenuItem[] = [];
+    if (selectedIds.size >= 1) {
+      items.push({
+        id: 'group-frame',
+        label: 'Group into Frame',
+      });
+    }
+    items.push({ id: 'divider-1', label: '', divider: true });
+    items.push({ id: 'duplicate', label: 'Duplicate' });
+    items.push({
+      id: 'delete',
+      label: 'Delete',
+      danger: true,
+    });
+
+    this.contextMenuItems.set(items);
+    this.contextMenuPos.set({ x: e.clientX, y: e.clientY });
+    this.contextMenuOpen.set(true);
+  }
+
+  readonly confirmDialogOpen = signal(false);
+  readonly confirmDialogMessage = signal('');
+  private confirmDialogCallback: (() => void) | null = null;
+
+  onContextMenuAction(actionId: string): void {
+    this.contextMenuOpen.set(false);
+
+    switch (actionId) {
+      case 'group-frame':
+        this.groupIntoFrame();
+        break;
+      case 'ungroup-frame':
+        this.ungroupFrame();
+        break;
+      case 'delete-frame-with-children':
+        this.confirmDeleteFrameWithChildren();
+        break;
+      case 'duplicate': {
+        const ids = [...this.workspaceState.selectedBlockIds()];
+        this.historyService.pushSnapshot();
+        for (const id of ids) {
+          this.workspaceState.duplicateBlock(id);
+        }
+        break;
+      }
+      case 'delete':
+        this.historyService.pushSnapshot();
+        this.workspaceState.deleteSelectedBlocks();
+        break;
+    }
+    this.contextMenuTargetBlockId = null;
+  }
+
+  private ungroupFrame(): void {
+    if (!this.contextMenuTargetBlockId) return;
+    this.historyService.pushSnapshot();
+    this.workspaceState.deleteBlock(this.contextMenuTargetBlockId);
+  }
+
+  private confirmDeleteFrameWithChildren(): void {
+    if (!this.contextMenuTargetBlockId) return;
+    const blocks = this.workspaceState.blocks();
+    const frame = blocks[this.contextMenuTargetBlockId];
+    if (!frame) return;
+
+    const children = Object.values(blocks).filter(
+      (b) => b.id !== frame.id && b.type !== 'frame' && this.isInsideFrame(b, frame)
+    );
+
+    this.confirmDialogMessage.set(
+      `Are you sure you want to delete this frame and ${children.length} node${children.length !== 1 ? 's' : ''} inside it?`
+    );
+    this.confirmDialogCallback = () => {
+      this.historyService.pushSnapshot();
+      for (const child of children) {
+        this.workspaceState.deleteBlock(child.id);
+      }
+      this.workspaceState.deleteBlock(frame.id);
+    };
+    this.confirmDialogOpen.set(true);
+  }
+
+  onConfirmDialogAccept(): void {
+    this.confirmDialogOpen.set(false);
+    this.confirmDialogCallback?.();
+    this.confirmDialogCallback = null;
+  }
+
+  onConfirmDialogCancel(): void {
+    this.confirmDialogOpen.set(false);
+    this.confirmDialogCallback = null;
+  }
+
+  onContextMenuClose(): void {
+    this.contextMenuOpen.set(false);
+  }
+
+  onBlockContextMenu(event: { blockId: string; x: number; y: number }): void {
+    const blocks = this.workspaceState.blocks();
+    const block = blocks[event.blockId];
+    if (!block) return;
+
+    const items: ContextMenuItem[] = [];
+
+    if (block.type === 'frame') {
+      items.push({ id: 'ungroup-frame', label: 'Ungroup Frame' });
+      items.push({
+        id: 'delete-frame-with-children',
+        label: 'Delete Frame and Contents',
+        danger: true,
+      });
+      items.push({ id: 'divider-1', label: '', divider: true });
+    }
+
+    const selectedIds = this.workspaceState.selectedBlockIds();
+    if (selectedIds.size >= 2) {
+      items.push({ id: 'group-frame', label: 'Group into Frame' });
+      items.push({ id: 'divider-2', label: '', divider: true });
+    }
+
+    items.push({ id: 'duplicate', label: 'Duplicate' });
+    items.push({ id: 'delete', label: 'Delete', danger: true });
+
+    this.contextMenuItems.set(items);
+    this.contextMenuPos.set({ x: event.x, y: event.y });
+    this.contextMenuOpen.set(true);
+    this.contextMenuTargetBlockId = event.blockId;
+  }
+
+  private contextMenuTargetBlockId: string | null = null;
+
+  private groupIntoFrame(): void {
+    const selectedIds = [...this.workspaceState.selectedBlockIds()];
+    const blocks = this.workspaceState.blocks();
+    const selectedBlocks = selectedIds
+      .map((id) => blocks[id])
+      .filter(Boolean);
+
+    if (selectedBlocks.length === 0) return;
+
+    this.historyService.pushSnapshot();
+
+    const padding = 40;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const b of selectedBlocks) {
+      minX = Math.min(minX, b.position.x);
+      minY = Math.min(minY, b.position.y);
+      maxX = Math.max(maxX, b.position.x + b.size.width);
+      maxY = Math.max(maxY, b.position.y + b.size.height);
+    }
+
+    const framePos: Vector2 = {
+      x: minX - padding,
+      y: minY - padding - 30,
+    };
+
+    const frame = createDefaultBlock('frame', framePos, 0);
+    frame.size = {
+      width: maxX - minX + padding * 2,
+      height: maxY - minY + padding * 2 + 30,
+    };
+
+    this.workspaceState.addBlockDirect(frame);
+    this.workspaceState.clearSelection();
+    this.workspaceState.selectBlock(frame.id, false);
   }
 
   ngOnDestroy(): void {

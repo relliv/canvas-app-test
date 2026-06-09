@@ -45,6 +45,11 @@ export class BlockOverlayComponent {
     shiftKey: boolean;
   }>();
   @Output() blockFocus = new EventEmitter<string>();
+  @Output() blockContextMenu = new EventEmitter<{
+    blockId: string;
+    x: number;
+    y: number;
+  }>();
 
   @ViewChild('frameEl', { static: true })
   frameRef!: ElementRef<HTMLDivElement>;
@@ -111,10 +116,46 @@ export class BlockOverlayComponent {
 
   onFrameDblClick(e: MouseEvent): void {
     e.stopPropagation();
+
+    if (this.block.type === 'image') {
+      const cfg = this.block.config as import('@ngeenx/shared-models').ImageConfig;
+      const url = prompt('Enter image URL:', cfg.url || '');
+      if (url !== null) {
+        this.workspaceState.updateBlock(this.block.id, {
+          config: { ...cfg, url },
+        });
+      }
+      return;
+    }
+
+    if (this.block.type === 'clock') {
+      const cfg = this.block.config as import('@ngeenx/shared-models').ClockConfig;
+      const label = prompt('Clock label:', cfg.label || 'Clock');
+      if (label !== null) {
+        this.workspaceState.updateBlock(this.block.id, {
+          config: { ...cfg, label },
+        });
+      }
+      return;
+    }
+
     if (!this.isFocused) {
       this.blockFocus.emit(this.block.id);
       this.focusContent();
     }
+  }
+
+  onFrameContextMenu(e: MouseEvent): void {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!this.workspaceState.selectedBlockIds().has(this.block.id)) {
+      this.blockSelect.emit({ blockId: this.block.id, shiftKey: false });
+    }
+    this.blockContextMenu.emit({
+      blockId: this.block.id,
+      x: e.clientX,
+      y: e.clientY,
+    });
   }
 
   onResizePointerDown(e: PointerEvent, handle: string): void {

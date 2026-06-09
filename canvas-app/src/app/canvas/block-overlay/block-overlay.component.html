@@ -5,8 +5,10 @@
   [class.selected]="isSelected"
   [class.hovered]="isHovered"
   [class.focused]="isFocused"
+  [class.is-frame]="block.type === 'frame'"
   (pointerdown)="onFramePointerDown($event)"
   (dblclick)="onFrameDblClick($event)"
+  (contextmenu)="onFrameContextMenu($event)"
 >
   @if (showConnectionPoints) {
     @for (point of block.connectionPoints; track point.id) {
@@ -17,8 +19,15 @@
     }
   }
 
-  @if (!isFocused) {
+  @if (!isFocused && block.type !== 'frame') {
     <div class="content-shield"></div>
+  }
+
+  @if (block.type === 'frame') {
+    <div class="frame-edge frame-edge--top" data-drag-handle></div>
+    <div class="frame-edge frame-edge--right" data-drag-handle></div>
+    <div class="frame-edge frame-edge--bottom" data-drag-handle></div>
+    <div class="frame-edge frame-edge--left" data-drag-handle></div>
   }
 
   <cw-block-host [block]="block" />
