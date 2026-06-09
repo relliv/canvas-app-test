@@ -1,8 +1,12 @@
 <div
+  #frameEl
   class="block-frame"
   [ngStyle]="blockStyles"
   [class.selected]="isSelected"
   [class.hovered]="isHovered"
+  [class.focused]="isFocused"
+  (pointerdown)="onFramePointerDown($event)"
+  (dblclick)="onFrameDblClick($event)"
 >
   @if (showConnectionPoints) {
     @for (point of block.connectionPoints; track point.id) {
@@ -13,13 +17,21 @@
     }
   }
 
+  @if (!isFocused) {
+    <div class="content-shield"></div>
+  }
+
   <cw-block-host [block]="block" />
 
-  @if (isSelected) {
-    <div class="resize-handle resize-handle--nw"></div>
-    <div class="resize-handle resize-handle--ne"></div>
-    <div class="resize-handle resize-handle--sw"></div>
-    <div class="resize-handle resize-handle--se"></div>
+  @if (isSelected || isHovered) {
+    <div class="resize-handle resize-handle--n" (pointerdown)="onResizePointerDown($event, 'n')"></div>
+    <div class="resize-handle resize-handle--e" (pointerdown)="onResizePointerDown($event, 'e')"></div>
+    <div class="resize-handle resize-handle--s" (pointerdown)="onResizePointerDown($event, 's')"></div>
+    <div class="resize-handle resize-handle--w" (pointerdown)="onResizePointerDown($event, 'w')"></div>
+    <div class="resize-handle resize-handle--nw" (pointerdown)="onResizePointerDown($event, 'nw')"></div>
+    <div class="resize-handle resize-handle--ne" (pointerdown)="onResizePointerDown($event, 'ne')"></div>
+    <div class="resize-handle resize-handle--sw" (pointerdown)="onResizePointerDown($event, 'sw')"></div>
+    <div class="resize-handle resize-handle--se" (pointerdown)="onResizePointerDown($event, 'se')"></div>
   }
 
   @if (showToolbar) {

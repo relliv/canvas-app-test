@@ -10,6 +10,13 @@
         [block]="block"
         [isSelected]="workspaceState.selectedBlockIds().has(block.id)"
         [isHovered]="hoveredBlockId() === block.id"
+        [isFocused]="focusedBlockId() === block.id"
+        [canvasZoom]="workspaceState.viewportState().zoom"
+        (blockDragStart)="onOverlayDragStart($event)"
+        (blockDragMove)="onOverlayDragMove($event)"
+        (blockDragEnd)="onOverlayDragEnd()"
+        (blockSelect)="onOverlaySelect($event)"
+        (blockFocus)="onOverlayFocus($event)"
       />
     }
   </div>

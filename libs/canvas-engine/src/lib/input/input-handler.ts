@@ -5,7 +5,6 @@ export type InputMode =
   | 'idle'
   | 'panning'
   | 'selecting'
-  | 'dragging-block'
   | 'resizing-block'
   | 'connecting';
 
@@ -122,16 +121,9 @@ export class InputHandler {
         return;
       }
 
-      const hitBlockId = this.hitTest(worldPos);
-      if (hitBlockId) {
-        this.mode = 'dragging-block';
-        this.container.setPointerCapture(e.pointerId);
-        this.callbacks.onBlockDragStart(hitBlockId, worldPos);
-      } else {
-        this.mode = 'selecting';
-        this.container.setPointerCapture(e.pointerId);
-        this.callbacks.onSelectionStart(worldPos);
-      }
+      this.mode = 'panning';
+      this.container.setPointerCapture(e.pointerId);
+      this.container.style.cursor = 'grabbing';
     }
   };
 
@@ -154,10 +146,6 @@ export class InputHandler {
         this.lastMousePos = screenPos;
         break;
       }
-      case 'dragging-block':
-        this.hasDragged = true;
-        this.callbacks.onBlockDragMove(worldPos);
-        break;
       case 'selecting':
         this.hasDragged = true;
         this.callbacks.onSelectionMove(worldPos);
@@ -180,15 +168,9 @@ export class InputHandler {
     switch (this.mode) {
       case 'panning':
         this.container.style.cursor = this.isPanKeyHeld ? 'grab' : 'default';
-        break;
-      case 'dragging-block':
         if (!this.hasDragged) {
-          const hitBlockId = this.hitTest(this.dragStartPos);
-          if (hitBlockId) {
-            this.callbacks.onBlockClick(hitBlockId, e.shiftKey);
-          }
+          this.callbacks.onCanvasClick(worldPos);
         }
-        this.callbacks.onBlockDragEnd();
         break;
       case 'selecting':
         if (!this.hasDragged) {
@@ -210,10 +192,16 @@ export class InputHandler {
     }
 
     this.mode = 'idle';
-    this.container.releasePointerCapture(e.pointerId);
+    try {
+      this.container.releasePointerCapture(e.pointerId);
+    } catch { /* may not be captured */ }
   };
 
   private onWheel = (e: WheelEvent): void => {
+    const target = e.target as HTMLElement;
+    if (target.closest('.block-frame.selected, .block-frame.focused')) {
+      return;
+    }
     e.preventDefault();
     const focalPoint = this.getLocalPos(e);
     const zoomDelta = -e.deltaY * 0.001;

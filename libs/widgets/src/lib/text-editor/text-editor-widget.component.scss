@@ -11,25 +11,56 @@
 .editor-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border-default);
-  color: var(--text-secondary);
   pointer-events: auto;
 }
 
+.header-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
 .editor-title {
-  font-size: 12px;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-right: auto;
+  color: var(--text-primary);
+  outline: none;
+  cursor: text;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+
+  &:focus {
+    background: var(--bg-tertiary);
+    white-space: normal;
+    overflow: visible;
+  }
+
+  &:empty::before {
+    content: 'Untitled';
+    color: var(--text-muted);
+  }
 }
 
 .editor-toolbar {
   display: flex;
   align-items: center;
   gap: 2px;
+  padding: 4px 14px;
+  border-bottom: 1px solid var(--border-default);
+  pointer-events: auto;
 }
 
 .toolbar-sep {
@@ -43,8 +74,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 700;

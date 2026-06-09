@@ -51,6 +51,20 @@ export class TextEditorWidgetComponent implements OnInit, OnDestroy {
     });
   }
 
+  onTitleChange(event: FocusEvent): void {
+    const el = event.target as HTMLElement;
+    const title = el.textContent?.trim() || 'Untitled';
+    this.workspaceState.updateBlock(this.block.id, {
+      config: { ...this.config, title },
+    });
+  }
+
+  onTitleEnter(event: KeyboardEvent): void {
+    event.preventDefault();
+    (event.target as HTMLElement).blur();
+    this.editor.commands.focus();
+  }
+
   toggleBold(): void {
     this.editor.chain().focus().toggleBold().run();
   }
@@ -75,9 +89,8 @@ export class TextEditorWidgetComponent implements OnInit, OnDestroy {
     this.editor.chain().focus().toggleCodeBlock().run();
   }
 
-  onToolbarMouseDown(event: MouseEvent): void {
+  onPointerDown(event: PointerEvent): void {
     event.stopPropagation();
-    event.preventDefault();
   }
 
   ngOnDestroy(): void {

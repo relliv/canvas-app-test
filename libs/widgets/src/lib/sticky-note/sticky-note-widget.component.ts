@@ -46,7 +46,7 @@ export class StickyNoteWidgetComponent {
     });
   }
 
-  onMouseDown(event: MouseEvent): void {
+  onPointerDown(event: PointerEvent): void {
     event.stopPropagation();
   }
 }

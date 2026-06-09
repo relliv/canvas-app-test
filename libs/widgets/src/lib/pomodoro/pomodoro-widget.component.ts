@@ -47,6 +47,10 @@ export class PomodoroWidgetComponent implements OnDestroy {
     return [1, 2, 3, 4];
   }
 
+  onPointerDown(event: PointerEvent): void {
+    event.stopPropagation();
+  }
+
   toggleTimer(event: MouseEvent): void {
     event.stopPropagation();
     const c = this.config;

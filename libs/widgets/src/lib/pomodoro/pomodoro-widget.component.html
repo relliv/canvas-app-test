@@ -1,5 +1,5 @@
 <div class="pomodoro-container">
-  <div class="timer-header">
+  <div class="timer-header" data-drag-handle>
     <span class="timer-label">{{ config.isBreak ? 'Break' : 'Focus' }}</span>
     <span class="session-count">Session {{ config.completedSessions + 1 }}</span>
   </div>
@@ -30,7 +30,7 @@
     <span class="timer-display">{{ displayTime }}</span>
   </div>
 
-  <div class="timer-controls">
+  <div class="timer-controls" (pointerdown)="onPointerDown($event)">
     <button class="control-btn control-btn--primary" (click)="toggleTimer($event)">
       {{ config.isRunning ? 'Pause' : 'Start' }}
     </button>

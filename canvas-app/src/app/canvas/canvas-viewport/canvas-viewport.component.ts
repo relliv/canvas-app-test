@@ -11,7 +11,10 @@ import {
   effect,
   Injector,
 } from '@angular/core';
-import { BlockOverlayComponent } from '../block-overlay/block-overlay.component';
+import {
+  BlockOverlayComponent,
+  BlockDragEvent,
+} from '../block-overlay/block-overlay.component';
 import {
   Viewport,
   CanvasRenderer,
@@ -20,6 +23,7 @@ import {
 } from '@ngeenx/canvas-engine';
 import { WorkspaceStateService, HistoryService } from '@ngeenx/state';
 import { Vector2, Rect, Block } from '@ngeenx/shared-models';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'cw-canvas-viewport',
@@ -43,6 +47,7 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
 
   protected workspaceState = inject(WorkspaceStateService);
   private historyService = inject(HistoryService);
+  private themeService = inject(ThemeService);
 
   private dragStartBlockPos: Vector2 | null = null;
   private dragBlockId: string | null = null;
@@ -62,17 +67,25 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
   private connDragSourcePointId: string | null = null;
 
   readonly hoveredBlockId = signal<string | null>(null);
+  readonly focusedBlockId = signal<string | null>(null);
 
   readonly visibleBlocks = computed(() => {
     const allBlocks = this.workspaceState.blocks();
-    return Object.values(allBlocks).filter((block) =>
-      this.viewport.isRectVisible({
-        x: block.position.x,
-        y: block.position.y,
-        width: block.size.width,
-        height: block.size.height,
-      })
-    );
+    const vp = this.workspaceState.viewportState();
+    const zoom = vp.zoom;
+    const vpWidth = (this.viewport.canvasSize.width || window.innerWidth) / zoom;
+    const vpHeight = (this.viewport.canvasSize.height || window.innerHeight) / zoom;
+    const vpX = -vp.offset.x / zoom;
+    const vpY = -vp.offset.y / zoom;
+
+    return Object.values(allBlocks).filter((block) => {
+      return !(
+        block.position.x + block.size.width < vpX ||
+        block.position.x > vpX + vpWidth ||
+        block.position.y + block.size.height < vpY ||
+        block.position.y > vpY + vpHeight
+      );
+    });
   });
 
   readonly overlayTransform = computed(() => {
@@ -113,6 +126,14 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
       () => {
         const rect = this.selectionRect();
         this.renderer.setSelectionRect(rect);
+      },
+      { injector: this.injector }
+    );
+
+    effect(
+      () => {
+        this.themeService.theme();
+        this.renderer.markDirty();
       },
       { injector: this.injector }
     );
@@ -159,35 +180,9 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
       onHover: (blockId) => {
         this.hoveredBlockId.set(blockId);
       },
-      onBlockDragStart: (blockId, worldPos) => {
-        this.historyService.pushSnapshot();
-        const block = this.workspaceState.blocks()[blockId];
-        if (!block) return;
-
-        if (!this.workspaceState.selectedBlockIds().has(blockId)) {
-          this.workspaceState.selectBlock(blockId, false);
-        }
-        this.workspaceState.bringToFront(blockId);
-
-        this.dragBlockId = blockId;
-        this.dragStartBlockPos = { ...block.position };
-        this.dragOffset = {
-          x: worldPos.x - block.position.x,
-          y: worldPos.y - block.position.y,
-        };
-      },
-      onBlockDragMove: (worldPos) => {
-        if (!this.dragBlockId) return;
-        const newPos: Vector2 = {
-          x: worldPos.x - this.dragOffset.x,
-          y: worldPos.y - this.dragOffset.y,
-        };
-        this.workspaceState.moveBlock(this.dragBlockId, newPos);
-      },
-      onBlockDragEnd: () => {
-        this.dragBlockId = null;
-        this.dragStartBlockPos = null;
-      },
+      onBlockDragStart: () => {},
+      onBlockDragMove: () => {},
+      onBlockDragEnd: () => {},
       onSelectionStart: (worldPos) => {
         this.selectionStart = worldPos;
         this.selectionRect.set({
@@ -212,12 +207,10 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
         this.selectionStart = null;
         this.selectionRect.set(null);
       },
-      onBlockClick: (blockId, shiftKey) => {
-        this.workspaceState.selectBlock(blockId, shiftKey);
-        this.workspaceState.bringToFront(blockId);
-      },
+      onBlockClick: () => {},
       onCanvasClick: () => {
         this.workspaceState.clearSelection();
+        this.focusedBlockId.set(null);
       },
       onResizeStart: (blockId, handle, worldPos) => {
         this.historyService.pushSnapshot();
@@ -441,6 +434,65 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
           x: block.position.x + block.size.width,
           y: block.position.y + block.size.height * point.offset,
         };
+    }
+  }
+
+  // Block overlay drag handlers
+
+  private screenToWorld(screenPos: Vector2): Vector2 {
+    const container = this.containerRef.nativeElement;
+    const rect = container.getBoundingClientRect();
+    const localPos: Vector2 = {
+      x: screenPos.x - rect.left,
+      y: screenPos.y - rect.top,
+    };
+    return this.viewport.screenToWorld(localPos);
+  }
+
+  onOverlayDragStart(event: BlockDragEvent): void {
+    this.historyService.pushSnapshot();
+    const block = this.workspaceState.blocks()[event.blockId];
+    if (!block) return;
+
+    if (!this.workspaceState.selectedBlockIds().has(event.blockId)) {
+      this.workspaceState.selectBlock(event.blockId, false);
+    }
+    this.workspaceState.bringToFront(event.blockId);
+
+    const worldPos = this.screenToWorld(event.screenPos);
+    this.dragBlockId = event.blockId;
+    this.dragStartBlockPos = { ...block.position };
+    this.dragOffset = {
+      x: worldPos.x - block.position.x,
+      y: worldPos.y - block.position.y,
+    };
+  }
+
+  onOverlayDragMove(screenPos: Vector2): void {
+    if (!this.dragBlockId) return;
+    const worldPos = this.screenToWorld(screenPos);
+    const newPos: Vector2 = {
+      x: worldPos.x - this.dragOffset.x,
+      y: worldPos.y - this.dragOffset.y,
+    };
+    this.workspaceState.moveBlock(this.dragBlockId, newPos);
+  }
+
+  onOverlayDragEnd(): void {
+    this.dragBlockId = null;
+    this.dragStartBlockPos = null;
+  }
+
+  onOverlaySelect(event: { blockId: string; shiftKey: boolean }): void {
+    this.focusedBlockId.set(null);
+    this.workspaceState.selectBlock(event.blockId, event.shiftKey);
+    this.workspaceState.bringToFront(event.blockId);
+  }
+
+  onOverlayFocus(blockId: string): void {
+    this.focusedBlockId.set(blockId);
+    if (!this.workspaceState.selectedBlockIds().has(blockId)) {
+      this.workspaceState.selectBlock(blockId, false);
     }
   }
 
