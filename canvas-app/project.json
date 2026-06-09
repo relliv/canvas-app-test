@@ -20,15 +20,18 @@
             "input": "canvas-app/public"
           }
         ],
-        "styles": ["canvas-app/src/styles.scss"]
+        "styles": [
+          "canvas-app/src/styles.scss",
+          "node_modules/@xterm/xterm/css/xterm.css"
+        ]
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
             },
             {
               "type": "anyComponentStyle",

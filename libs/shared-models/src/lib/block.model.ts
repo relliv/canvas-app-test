@@ -4,9 +4,11 @@ import {
   DEFAULT_POMODORO_CONFIG,
   DEFAULT_TEXT_EDITOR_CONFIG,
   DEFAULT_STICKY_NOTE_CONFIG,
+  DEFAULT_TERMINAL_CONFIG,
+  DEFAULT_WEB_BROWSER_CONFIG,
 } from './widget-config.model';
 
-export type BlockType = 'pomodoro' | 'text-editor' | 'sticky-note';
+export type BlockType = 'pomodoro' | 'text-editor' | 'sticky-note' | 'terminal' | 'web-browser';
 
 export interface ConnectionPoint {
   id: string;
@@ -38,12 +40,16 @@ const DEFAULT_BLOCK_SIZES: Record<BlockType, Size> = {
   pomodoro: { width: 280, height: 320 },
   'text-editor': { width: 360, height: 280 },
   'sticky-note': { width: 240, height: 200 },
+  terminal: { width: 500, height: 320 },
+  'web-browser': { width: 600, height: 450 },
 };
 
 const DEFAULT_CONFIGS: Record<BlockType, WidgetConfig> = {
   pomodoro: DEFAULT_POMODORO_CONFIG,
   'text-editor': DEFAULT_TEXT_EDITOR_CONFIG,
   'sticky-note': DEFAULT_STICKY_NOTE_CONFIG,
+  terminal: DEFAULT_TERMINAL_CONFIG,
+  'web-browser': DEFAULT_WEB_BROWSER_CONFIG,
 };
 
 export function createDefaultBlock(
@@ -51,13 +57,28 @@ export function createDefaultBlock(
   position: Vector2,
   zIndex: number
 ): Block {
+  const config = structuredClone(DEFAULT_CONFIGS[type]);
+
+  if (config.type === 'web-browser') {
+    const tabId = crypto.randomUUID();
+    const defaultUrl = 'https://example.com';
+    config.tabs = [{
+      id: tabId,
+      title: 'New Tab',
+      url: defaultUrl,
+      history: [defaultUrl],
+      historyIndex: 0,
+    }];
+    config.activeTabId = tabId;
+  }
+
   return {
     id: crypto.randomUUID(),
     type,
     position,
     size: { ...DEFAULT_BLOCK_SIZES[type] },
     zIndex,
-    config: { ...DEFAULT_CONFIGS[type] },
+    config,
     connectionPoints: DEFAULT_CONNECTION_POINTS.map((p) => ({ ...p })),
     locked: false,
     createdAt: Date.now(),

@@ -27,6 +27,8 @@ export class SidebarComponent {
     { type: 'sticky-note', label: 'Note', icon: 'note' },
     { type: 'text-editor', label: 'Text', icon: 'edit' },
     { type: 'pomodoro', label: 'Timer', icon: 'timer' },
+    { type: 'terminal', label: 'Terminal', icon: 'terminal' },
+    { type: 'web-browser', label: 'Browser', icon: 'browser' },
   ];
 
   addBlock(type: BlockType): void {

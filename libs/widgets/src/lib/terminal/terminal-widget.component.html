@@ -1,0 +1,16 @@
+<div class="terminal-container">
+  <div class="terminal-header" data-drag-handle>
+    <svg lucideTerminal class="header-icon" [size]="14"></svg>
+    <div
+      class="terminal-title"
+      contenteditable="true"
+      spellcheck="false"
+      [textContent]="config.title"
+      (focus)="onTitleFocus()"
+      (blur)="onTitleBlur($event)"
+      (keydown.enter)="onTitleEnter($any($event))"
+      (keydown)="onTitleKeydown($event)"
+    ></div>
+  </div>
+  <div #terminalContainer class="terminal-body"></div>
+</div>

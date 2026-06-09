@@ -10,6 +10,8 @@ import {
   PomodoroWidgetComponent,
   TextEditorWidgetComponent,
   StickyNoteWidgetComponent,
+  TerminalWidgetComponent,
+  WebBrowserWidgetComponent,
 } from '@ngeenx/widgets';
 
 function registerWidgets(registry: WidgetRegistryService): () => void {
@@ -17,6 +19,8 @@ function registerWidgets(registry: WidgetRegistryService): () => void {
     registry.register('pomodoro', PomodoroWidgetComponent);
     registry.register('text-editor', TextEditorWidgetComponent);
     registry.register('sticky-note', StickyNoteWidgetComponent);
+    registry.register('terminal', TerminalWidgetComponent);
+    registry.register('web-browser', WebBrowserWidgetComponent);
   };
 }
 

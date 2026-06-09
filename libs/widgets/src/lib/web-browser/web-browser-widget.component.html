@@ -1,0 +1,79 @@
+<div class="browser-container">
+  <div class="browser-tabs" data-drag-handle>
+    @for (tab of config.tabs; track tab.id) {
+      <div
+        class="tab"
+        [class.active]="tab.id === config.activeTabId"
+        (pointerdown)="$event.stopPropagation()"
+        (click)="selectTab(tab.id)"
+      >
+        @if (isTabLoading(tab.id)) {
+          <svg lucideLoaderCircle [size]="12" class="tab-icon tab-icon--spinner"></svg>
+        } @else {
+          <img
+            class="tab-favicon"
+            [src]="getFaviconUrl(tab.url)"
+            width="14"
+            height="14"
+            (error)="onFaviconError($event)"
+            alt=""
+          />
+          <svg lucideGlobe [size]="12" class="tab-icon tab-icon--fallback" style="display: none"></svg>
+        }
+        <span class="tab-title">{{ tab.title }}</span>
+        <button class="tab-close" (click)="closeTab(tab.id, $event)">
+          <svg lucideX [size]="10"></svg>
+        </button>
+      </div>
+    }
+    <button class="tab-add" title="New tab" (pointerdown)="$event.stopPropagation()" (click)="addTab()">
+      <svg lucidePlus [size]="12"></svg>
+    </button>
+
+    <div class="tab-spacer"></div>
+
+    <button
+      class="size-picker-btn"
+      title="Responsive sizes"
+      (pointerdown)="$event.stopPropagation()"
+      (click)="toggleSizeDropdown($event)"
+    >
+      <svg lucideMonitorSmartphone [size]="13"></svg>
+      <span class="size-label">{{ currentSizeLabel }}</span>
+    </button>
+  </div>
+
+  <div class="browser-toolbar">
+    <button class="nav-btn" [disabled]="!canGoBack" (click)="goBack()" title="Back">
+      <svg lucideArrowLeft [size]="14"></svg>
+    </button>
+    <button class="nav-btn" [disabled]="!canGoForward" (click)="goForward()" title="Forward">
+      <svg lucideArrowRight [size]="14"></svg>
+    </button>
+    <button class="nav-btn" (click)="reload()" title="Reload">
+      <svg lucideRefreshCw [size]="14"></svg>
+    </button>
+    <input
+      class="url-bar"
+      type="text"
+      [value]="activeUrl"
+      (input)="onUrlInput($event)"
+      (keydown)="onUrlKeydown($event)"
+      (focus)="onUrlFocus()"
+      placeholder="Enter URL..."
+      spellcheck="false"
+    />
+  </div>
+
+  <div class="browser-viewport">
+    @if (iframeSrc) {
+      <iframe
+        [src]="iframeSrc | safeUrl"
+        class="browser-iframe"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+        referrerpolicy="no-referrer"
+        (load)="onIframeLoad()"
+      ></iframe>
+    }
+  </div>
+</div>
