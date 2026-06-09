@@ -241,6 +241,30 @@ export class InputHandler {
       this.isPanKeyHeld = true;
       this.container.style.cursor = 'grab';
     }
+
+    const target = e.target as HTMLElement;
+    const isInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable;
+    if (!isInput && this.mode === 'idle') {
+      const step = 60;
+      switch (e.code) {
+        case 'ArrowUp':
+          e.preventDefault();
+          this.viewport.smoothPan({ x: 0, y: step });
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          this.viewport.smoothPan({ x: 0, y: -step });
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          this.viewport.smoothPan({ x: step, y: 0 });
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          this.viewport.smoothPan({ x: -step, y: 0 });
+          break;
+      }
+    }
   };
 
   private onKeyUp = (e: KeyboardEvent): void => {

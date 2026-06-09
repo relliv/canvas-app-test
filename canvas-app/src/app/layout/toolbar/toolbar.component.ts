@@ -9,6 +9,7 @@ import {
   HistoryService,
   PersistenceService,
 } from '@ngeenx/state';
+import { getViewport } from '@ngeenx/canvas-engine';
 import { ThemeService } from '../../services/theme.service';
 
 @Component({
@@ -37,25 +38,24 @@ export class ToolbarComponent {
   }
 
   zoomIn(): void {
-    this.workspaceState.updateViewport({
-      ...this.workspaceState.viewportState(),
-      zoom: Math.min(5, this.workspaceState.viewportState().zoom + 0.1),
-    });
+    const vp = getViewport();
+    if (vp) {
+      vp.setZoom(vp.zoom + 0.15);
+    }
   }
 
   zoomOut(): void {
-    this.workspaceState.updateViewport({
-      ...this.workspaceState.viewportState(),
-      zoom: Math.max(0.1, this.workspaceState.viewportState().zoom - 0.1),
-    });
+    const vp = getViewport();
+    if (vp) {
+      vp.setZoom(vp.zoom - 0.15);
+    }
   }
 
   resetZoom(): void {
-    this.workspaceState.updateViewport({
-      ...this.workspaceState.viewportState(),
-      offset: { x: 0, y: 0 },
-      zoom: 1,
-    });
+    const vp = getViewport();
+    if (vp) {
+      vp.resetView();
+    }
   }
 
   save(): void {

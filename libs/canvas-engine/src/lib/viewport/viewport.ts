@@ -1,9 +1,10 @@
 import { Vector2, Size, Rect, ViewportState } from '@ngeenx/shared-models';
 
-const ZOOM_LERP = 0.15;
-const ZOOM_SNAP_THRESHOLD = 0.001;
+const LERP = 0.15;
+const OFFSET_SNAP = 0.5;
+const ZOOM_SNAP = 0.001;
 const FLING_FRICTION = 0.92;
-const FLING_STOP_THRESHOLD = 0.5;
+const FLING_STOP = 0.5;
 
 export class Viewport {
   private _offset: Vector2 = { x: 0, y: 0 };
@@ -12,28 +13,20 @@ export class Viewport {
   private _maxZoom = 5;
   private _canvasSize: Size = { width: 0, height: 0 };
 
-  private _targetZoom = 1;
   private _targetOffset: Vector2 = { x: 0, y: 0 };
+  private _targetZoom = 1;
   private _zoomFocal: Vector2 = { x: 0, y: 0 };
-  private _animating = false;
-  private _animFrameId = 0;
-  private _flingVelocity: Vector2 = { x: 0, y: 0 };
-  private _flinging = false;
-  private _flingFrameId = 0;
+  private _useZoomFocal = false;
+  private _velocity: Vector2 = { x: 0, y: 0 };
+
+  private _running = false;
+  private _frameId = 0;
 
   onChanged: (() => void) | null = null;
 
-  get offset(): Vector2 {
-    return this._offset;
-  }
-
-  get zoom(): number {
-    return this._zoom;
-  }
-
-  get canvasSize(): Size {
-    return this._canvasSize;
-  }
+  get offset(): Vector2 { return this._offset; }
+  get zoom(): number { return this._zoom; }
+  get canvasSize(): Size { return this._canvasSize; }
 
   setCanvasSize(size: Size): void {
     this._canvasSize = size;
@@ -54,149 +47,149 @@ export class Viewport {
     };
   }
 
+  // Immediate pan (mouse drag), no animation
   pan(delta: Vector2): void {
-    this.stopFling();
+    this.stopAll();
     this._offset.x += delta.x;
     this._offset.y += delta.y;
-    this._targetOffset = { ...this._offset };
+    this.syncTarget();
     this.onChanged?.();
   }
 
+  // Animated pan to a relative delta
+  smoothPan(delta: Vector2): void {
+    this._targetOffset.x += delta.x;
+    this._targetOffset.y += delta.y;
+    this._useZoomFocal = false;
+    this.startLoop();
+  }
+
+  // Fling with initial velocity (after mouse release)
   fling(velocity: Vector2): void {
-    this._flingVelocity = { ...velocity };
-    if (!this._flinging) {
-      this._flinging = true;
-      this._flingFrameId = requestAnimationFrame(() => this.animateFling());
-    }
+    this._velocity = { ...velocity };
+    this.startLoop();
   }
 
-  private stopFling(): void {
-    this._flinging = false;
-    cancelAnimationFrame(this._flingFrameId);
-    this._flingVelocity = { x: 0, y: 0 };
-  }
-
-  private animateFling(): void {
-    this._offset.x += this._flingVelocity.x;
-    this._offset.y += this._flingVelocity.y;
-    this._targetOffset = { ...this._offset };
-
-    this._flingVelocity.x *= FLING_FRICTION;
-    this._flingVelocity.y *= FLING_FRICTION;
-
-    this.onChanged?.();
-
-    if (
-      Math.abs(this._flingVelocity.x) < FLING_STOP_THRESHOLD &&
-      Math.abs(this._flingVelocity.y) < FLING_STOP_THRESHOLD
-    ) {
-      this._flinging = false;
-      return;
-    }
-
-    this._flingFrameId = requestAnimationFrame(() => this.animateFling());
-  }
-
+  // Animated zoom toward a focal point
   zoomAt(focalScreenPoint: Vector2, zoomDelta: number): void {
     this._zoomFocal = focalScreenPoint;
-    this._targetZoom = Math.max(
-      this._minZoom,
-      Math.min(this._maxZoom, this._targetZoom * (1 + zoomDelta))
-    );
-
-    if (!this._animating) {
-      this._animating = true;
-      this._animFrameId = requestAnimationFrame(() => this.animateZoom());
-    }
+    this._useZoomFocal = true;
+    this._targetZoom = this.clampZoom(this._targetZoom * (1 + zoomDelta));
+    this.startLoop();
   }
 
-  private animateZoom(): void {
-    const prevZoom = this._zoom;
-    const diff = this._targetZoom - this._zoom;
-
-    if (Math.abs(diff) < ZOOM_SNAP_THRESHOLD) {
-      this._zoom = this._targetZoom;
-      this._animating = false;
-    } else {
-      this._zoom += diff * ZOOM_LERP;
-    }
-
-    const worldFocal = {
-      x: (this._zoomFocal.x - this._offset.x) / prevZoom,
-      y: (this._zoomFocal.y - this._offset.y) / prevZoom,
-    };
-    this._offset.x = this._zoomFocal.x - worldFocal.x * this._zoom;
-    this._offset.y = this._zoomFocal.y - worldFocal.y * this._zoom;
-    this._targetOffset = { ...this._offset };
-
-    this.onChanged?.();
-
-    if (this._animating) {
-      this._animFrameId = requestAnimationFrame(() => this.animateZoom());
-    }
-  }
-
+  // Animated zoom to absolute value (toolbar buttons)
   setZoom(zoom: number): void {
-    const center: Vector2 = {
-      x: this._canvasSize.width / 2,
-      y: this._canvasSize.height / 2,
-    };
-    this._zoomFocal = center;
-    this._targetZoom = Math.max(this._minZoom, Math.min(this._maxZoom, zoom));
-
-    if (!this._animating) {
-      this._animating = true;
-      this._animFrameId = requestAnimationFrame(() => this.animateZoom());
-    }
-  }
-
-  resetView(): void {
     this._zoomFocal = {
       x: this._canvasSize.width / 2,
       y: this._canvasSize.height / 2,
     };
-    this._targetZoom = 1;
-    this._targetOffset = { x: 0, y: 0 };
-
-    if (!this._animating) {
-      this._animating = true;
-      this._animFrameId = requestAnimationFrame(() => this.animateReset());
-    }
+    this._useZoomFocal = true;
+    this._targetZoom = this.clampZoom(zoom);
+    this.startLoop();
   }
 
-  private animateReset(): void {
+  // Animated pan + zoom to target (shared method for any transition)
+  animateTo(offset: Vector2, zoom?: number): void {
+    this._targetOffset = { ...offset };
+    if (zoom !== undefined) {
+      this._targetZoom = this.clampZoom(zoom);
+      this._zoomFocal = {
+        x: this._canvasSize.width / 2,
+        y: this._canvasSize.height / 2,
+      };
+      this._useZoomFocal = true;
+    }
+    this.startLoop();
+  }
+
+  // Reset to origin with animation
+  resetView(): void {
+    this.animateTo({ x: 0, y: 0 }, 1);
+  }
+
+  stopAll(): void {
+    this._running = false;
+    cancelAnimationFrame(this._frameId);
+    this._velocity = { x: 0, y: 0 };
+    this.syncTarget();
+  }
+
+  // --- animation loop ---
+
+  private startLoop(): void {
+    if (this._running) return;
+    this._running = true;
+    this._frameId = requestAnimationFrame(() => this.tick());
+  }
+
+  private tick(): void {
+    let settled = true;
+
+    // fling velocity
+    if (Math.abs(this._velocity.x) > FLING_STOP || Math.abs(this._velocity.y) > FLING_STOP) {
+      this._targetOffset.x += this._velocity.x;
+      this._targetOffset.y += this._velocity.y;
+      this._velocity.x *= FLING_FRICTION;
+      this._velocity.y *= FLING_FRICTION;
+      settled = false;
+    } else {
+      this._velocity.x = 0;
+      this._velocity.y = 0;
+    }
+
+    // zoom lerp
     const zoomDiff = this._targetZoom - this._zoom;
+    if (Math.abs(zoomDiff) > ZOOM_SNAP) {
+      if (this._useZoomFocal) {
+        const prevZoom = this._zoom;
+        this._zoom += zoomDiff * LERP;
+        const worldFocal = {
+          x: (this._zoomFocal.x - this._offset.x) / prevZoom,
+          y: (this._zoomFocal.y - this._offset.y) / prevZoom,
+        };
+        this._offset.x = this._zoomFocal.x - worldFocal.x * this._zoom;
+        this._offset.y = this._zoomFocal.y - worldFocal.y * this._zoom;
+        this._targetOffset = { ...this._offset };
+      } else {
+        this._zoom += zoomDiff * LERP;
+      }
+      settled = false;
+    } else if (Math.abs(zoomDiff) > 0) {
+      this._zoom = this._targetZoom;
+    }
+
+    // offset lerp
     const oxDiff = this._targetOffset.x - this._offset.x;
     const oyDiff = this._targetOffset.y - this._offset.y;
-
-    if (
-      Math.abs(zoomDiff) < ZOOM_SNAP_THRESHOLD &&
-      Math.abs(oxDiff) < 0.5 &&
-      Math.abs(oyDiff) < 0.5
-    ) {
-      this._zoom = this._targetZoom;
+    if (Math.abs(oxDiff) > OFFSET_SNAP || Math.abs(oyDiff) > OFFSET_SNAP) {
+      this._offset.x += oxDiff * LERP;
+      this._offset.y += oyDiff * LERP;
+      settled = false;
+    } else if (Math.abs(oxDiff) > 0 || Math.abs(oyDiff) > 0) {
       this._offset = { ...this._targetOffset };
-      this._animating = false;
-    } else {
-      this._zoom += zoomDiff * ZOOM_LERP;
-      this._offset.x += oxDiff * ZOOM_LERP;
-      this._offset.y += oyDiff * ZOOM_LERP;
     }
 
     this.onChanged?.();
 
-    if (this._animating) {
-      this._animFrameId = requestAnimationFrame(() => this.animateReset());
+    if (settled) {
+      this._running = false;
+      this._useZoomFocal = false;
+    } else {
+      this._frameId = requestAnimationFrame(() => this.tick());
     }
   }
 
-  stopAnimation(): void {
-    this._animating = false;
-    cancelAnimationFrame(this._animFrameId);
-    this._targetZoom = this._zoom;
+  private syncTarget(): void {
     this._targetOffset = { ...this._offset };
-    this.stopFling();
+    this._targetZoom = this._zoom;
   }
+
+  private clampZoom(z: number): number {
+    return Math.max(this._minZoom, Math.min(this._maxZoom, z));
+  }
+
+  // --- queries ---
 
   getVisibleRect(): Rect {
     const topLeft = this.screenToWorld({ x: 0, y: 0 });
@@ -225,10 +218,9 @@ export class Viewport {
   restore(state: ViewportState): void {
     this._offset = { ...state.offset };
     this._zoom = state.zoom;
-    this._targetZoom = state.zoom;
-    this._targetOffset = { ...state.offset };
     this._minZoom = state.minZoom;
     this._maxZoom = state.maxZoom;
+    this.syncTarget();
     this.onChanged?.();
   }
 

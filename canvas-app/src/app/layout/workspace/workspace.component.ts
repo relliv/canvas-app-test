@@ -15,6 +15,7 @@ import {
   HistoryService,
   ClipboardService,
 } from '@ngeenx/state';
+import { getViewport } from '@ngeenx/canvas-engine';
 
 @Component({
   selector: 'cw-workspace',
@@ -105,34 +106,24 @@ export class WorkspaceComponent implements OnInit {
           }
           break;
         case '=':
-        case '+':
+        case '+': {
           event.preventDefault();
-          this.workspaceState.updateViewport({
-            ...this.workspaceState.viewportState(),
-            zoom: Math.min(
-              5,
-              this.workspaceState.viewportState().zoom + 0.1
-            ),
-          });
+          const vp1 = getViewport();
+          if (vp1) vp1.setZoom(vp1.zoom + 0.15);
           break;
-        case '-':
+        }
+        case '-': {
           event.preventDefault();
-          this.workspaceState.updateViewport({
-            ...this.workspaceState.viewportState(),
-            zoom: Math.max(
-              0.1,
-              this.workspaceState.viewportState().zoom - 0.1
-            ),
-          });
+          const vp2 = getViewport();
+          if (vp2) vp2.setZoom(vp2.zoom - 0.15);
           break;
-        case '0':
+        }
+        case '0': {
           event.preventDefault();
-          this.workspaceState.updateViewport({
-            ...this.workspaceState.viewportState(),
-            offset: { x: 0, y: 0 },
-            zoom: 1,
-          });
+          const vp3 = getViewport();
+          if (vp3) vp3.resetView();
           break;
+        }
       }
     }
 

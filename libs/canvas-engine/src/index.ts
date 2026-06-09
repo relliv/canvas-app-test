@@ -1,4 +1,5 @@
 export { Viewport } from './lib/viewport/viewport';
+export { registerViewport, getViewport } from './lib/viewport/viewport.service';
 export { CanvasRenderer } from './lib/renderer/canvas-renderer';
 export { GridRenderer } from './lib/renderer/grid-renderer';
 export {

@@ -20,6 +20,7 @@ import {
   CanvasRenderer,
   InputHandler,
   InputCallbacks,
+  registerViewport,
 } from '@ngeenx/canvas-engine';
 import { WorkspaceStateService, HistoryService } from '@ngeenx/state';
 import {
@@ -113,6 +114,7 @@ export class CanvasViewportComponent implements AfterViewInit, OnDestroy {
   });
 
   ngAfterViewInit(): void {
+    registerViewport(this.viewport);
     const canvas = this.canvasRef.nativeElement;
     const container = this.containerRef.nativeElement;
 
