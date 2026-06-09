@@ -9,6 +9,7 @@ import {
   HistoryService,
   PersistenceService,
 } from '@ngeenx/state';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'cw-toolbar',
@@ -21,6 +22,7 @@ export class ToolbarComponent {
   protected workspaceState = inject(WorkspaceStateService);
   protected historyService = inject(HistoryService);
   protected persistenceService = inject(PersistenceService);
+  protected themeService = inject(ThemeService);
 
   readonly zoomPercent = computed(() =>
     Math.round(this.workspaceState.viewportState().zoom * 100)
@@ -58,5 +60,9 @@ export class ToolbarComponent {
 
   save(): void {
     this.persistenceService.saveNow();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 }

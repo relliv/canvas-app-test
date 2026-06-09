@@ -1,7 +1,6 @@
 import { Viewport } from '../viewport/viewport';
 
 export class GridRenderer {
-  private dotColor = 'rgba(255, 255, 255, 0.08)';
   private dotRadius = 1.5;
   private gridSpacing = 20;
 
@@ -25,7 +24,12 @@ export class GridRenderer {
     const endX = visible.x + visible.width;
     const endY = visible.y + visible.height;
 
-    ctx.fillStyle = this.dotColor;
+    const style = getComputedStyle(ctx.canvas);
+    const dotColor = style.getPropertyValue('--grid-dot-color').trim() || '#2a2a2e';
+    const opacity = parseFloat(style.getPropertyValue('--grid-dot-opacity').trim()) || 0.08;
+
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = dotColor;
     const radius = this.dotRadius * Math.min(zoom, 1);
 
     for (let wx = startX; wx <= endX; wx += step) {
@@ -36,5 +40,7 @@ export class GridRenderer {
         ctx.fill();
       }
     }
+
+    ctx.globalAlpha = 1;
   }
 }

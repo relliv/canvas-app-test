@@ -6,7 +6,10 @@ export {
   type ConnectionPreview,
 } from './lib/renderer/connection-renderer';
 export { SelectionRenderer } from './lib/renderer/selection-renderer';
-export { MinimapRenderer } from './lib/renderer/minimap-renderer';
+export {
+  MinimapRenderer,
+  type MinimapTransform,
+} from './lib/renderer/minimap-renderer';
 export {
   InputHandler,
   type InputCallbacks,

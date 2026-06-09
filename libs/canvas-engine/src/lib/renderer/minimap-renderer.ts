@@ -1,7 +1,20 @@
-import { Block, ViewportState, Rect, Vector2 } from '@ngeenx/shared-models';
+import { Block, ViewportState, Rect } from '@ngeenx/shared-models';
+
+export interface MinimapTransform {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+}
 
 export class MinimapRenderer {
   private padding = 20;
+  private lastTransform: MinimapTransform = { scale: 1, offsetX: 0, offsetY: 0 };
+  private lastCanvasSize = { width: 0, height: 0 };
+  private lastViewportState: ViewportState | null = null;
+
+  get transform(): MinimapTransform {
+    return this.lastTransform;
+  }
 
   render(
     ctx: CanvasRenderingContext2D,
@@ -19,15 +32,21 @@ export class MinimapRenderer {
     ctx.lineWidth = 1;
     ctx.strokeRect(0, 0, width, height);
 
+    this.lastCanvasSize = canvasSize;
+    this.lastViewportState = viewportState;
+
     const blockList = Object.values(blocks);
-    if (blockList.length === 0) return;
+    if (blockList.length === 0) {
+      this.lastTransform = { scale: 1, offsetX: 0, offsetY: 0 };
+      return;
+    }
 
     const bounds = this.calculateBounds(blockList, viewportState, canvasSize);
     const scale = this.calculateScale(bounds, width, height);
-    const offsetX =
-      (width - bounds.width * scale) / 2 - bounds.x * scale;
-    const offsetY =
-      (height - bounds.height * scale) / 2 - bounds.y * scale;
+    const offsetX = (width - bounds.width * scale) / 2 - bounds.x * scale;
+    const offsetY = (height - bounds.height * scale) / 2 - bounds.y * scale;
+
+    this.lastTransform = { scale, offsetX, offsetY };
 
     for (const block of blockList) {
       const x = block.position.x * scale + offsetX;
@@ -47,6 +66,19 @@ export class MinimapRenderer {
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.7)';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(vpX, vpY, vpW, vpH);
+  }
+
+  minimapToWorldCenter(
+    minimapX: number,
+    minimapY: number
+  ): { x: number; y: number } | null {
+    if (!this.lastViewportState) return null;
+    const { scale, offsetX, offsetY } = this.lastTransform;
+    if (scale === 0) return null;
+
+    const worldX = (minimapX - offsetX) / scale;
+    const worldY = (minimapY - offsetY) / scale;
+    return { x: worldX, y: worldY };
   }
 
   private calculateBounds(
@@ -97,6 +129,10 @@ export class MinimapRenderer {
         return 'rgba(99, 102, 241, 0.6)';
       case 'sticky-note':
         return 'rgba(250, 204, 21, 0.6)';
+      case 'terminal':
+        return 'rgba(34, 197, 94, 0.6)';
+      case 'web-browser':
+        return 'rgba(6, 182, 212, 0.6)';
       default:
         return 'rgba(161, 161, 170, 0.6)';
     }
