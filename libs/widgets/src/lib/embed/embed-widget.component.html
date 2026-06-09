@@ -1,0 +1,18 @@
+<div class="embed-widget">
+  <div class="embed-header" data-drag-handle>
+    <div class="embed-title" contenteditable="true" spellcheck="false"
+      [textContent]="config.title" (blur)="onTitleChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+  </div>
+  @if (config.url) {
+    <iframe class="embed-frame" [src]="config.url | safeRes"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      referrerpolicy="no-referrer"></iframe>
+  } @else {
+    <div class="embed-placeholder">
+      <input class="url-input" type="text" placeholder="Paste embed URL..."
+        [value]="config.url" (change)="onUrlChange($event)" (keydown)="onUrlKeydown($event)"
+        (pointerdown)="$event.stopPropagation()" />
+    </div>
+  }
+</div>

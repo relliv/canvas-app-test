@@ -1,0 +1,20 @@
+<div class="clock-widget">
+  <div class="clock-header" data-drag-handle>
+    <div class="clock-label" contenteditable="true" spellcheck="false"
+      [textContent]="config.label" (blur)="onLabelChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+    <select class="tz-select" [value]="config.timezone"
+      (change)="onTimezoneChange($event)" (pointerdown)="$event.stopPropagation()">
+      @for (tz of timezones; track tz.value) {
+        <option [value]="tz.value">{{ tz.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="clock-body">
+    <div class="clock-time">{{ time() }}</div>
+    <div class="clock-date">{{ date() }}</div>
+    <button class="format-btn" (pointerdown)="$event.stopPropagation()" (click)="toggleFormat()">
+      {{ config.format }}
+    </button>
+  </div>
+</div>

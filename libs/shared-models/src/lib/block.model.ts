@@ -6,9 +6,40 @@ import {
   DEFAULT_STICKY_NOTE_CONFIG,
   DEFAULT_TERMINAL_CONFIG,
   DEFAULT_WEB_BROWSER_CONFIG,
+  DEFAULT_FRAME_CONFIG,
+  DEFAULT_IMAGE_CONFIG,
+  DEFAULT_KANBAN_CONFIG,
+  DEFAULT_CODE_SNIPPET_CONFIG,
+  DEFAULT_MARKDOWN_CONFIG,
+  DEFAULT_CLOCK_CONFIG,
+  DEFAULT_EMBED_CONFIG,
+  DEFAULT_DRAWING_CONFIG,
+  DEFAULT_CHAT_CONFIG,
+  DEFAULT_CALENDAR_CONFIG,
+  DEFAULT_PROGRESS_TRACKER_CONFIG,
+  DEFAULT_FILE_PREVIEW_CONFIG,
+  DEFAULT_API_TESTER_CONFIG,
 } from './widget-config.model';
 
-export type BlockType = 'pomodoro' | 'text-editor' | 'sticky-note' | 'terminal' | 'web-browser';
+export type BlockType =
+  | 'pomodoro'
+  | 'text-editor'
+  | 'sticky-note'
+  | 'terminal'
+  | 'web-browser'
+  | 'frame'
+  | 'image'
+  | 'kanban'
+  | 'code-snippet'
+  | 'markdown'
+  | 'clock'
+  | 'embed'
+  | 'drawing'
+  | 'chat'
+  | 'calendar'
+  | 'progress-tracker'
+  | 'file-preview'
+  | 'api-tester';
 
 export interface ConnectionPoint {
   id: string;
@@ -42,6 +73,19 @@ const DEFAULT_BLOCK_SIZES: Record<BlockType, Size> = {
   'sticky-note': { width: 240, height: 200 },
   terminal: { width: 500, height: 320 },
   'web-browser': { width: 600, height: 450 },
+  frame: { width: 800, height: 600 },
+  image: { width: 320, height: 260 },
+  kanban: { width: 660, height: 400 },
+  'code-snippet': { width: 420, height: 300 },
+  markdown: { width: 400, height: 340 },
+  clock: { width: 220, height: 220 },
+  embed: { width: 500, height: 380 },
+  drawing: { width: 400, height: 320 },
+  chat: { width: 360, height: 440 },
+  calendar: { width: 300, height: 320 },
+  'progress-tracker': { width: 300, height: 280 },
+  'file-preview': { width: 460, height: 380 },
+  'api-tester': { width: 500, height: 480 },
 };
 
 const DEFAULT_CONFIGS: Record<BlockType, WidgetConfig> = {
@@ -50,6 +94,19 @@ const DEFAULT_CONFIGS: Record<BlockType, WidgetConfig> = {
   'sticky-note': DEFAULT_STICKY_NOTE_CONFIG,
   terminal: DEFAULT_TERMINAL_CONFIG,
   'web-browser': DEFAULT_WEB_BROWSER_CONFIG,
+  frame: DEFAULT_FRAME_CONFIG,
+  image: DEFAULT_IMAGE_CONFIG,
+  kanban: DEFAULT_KANBAN_CONFIG,
+  'code-snippet': DEFAULT_CODE_SNIPPET_CONFIG,
+  markdown: DEFAULT_MARKDOWN_CONFIG,
+  clock: DEFAULT_CLOCK_CONFIG,
+  embed: DEFAULT_EMBED_CONFIG,
+  drawing: DEFAULT_DRAWING_CONFIG,
+  chat: DEFAULT_CHAT_CONFIG,
+  calendar: DEFAULT_CALENDAR_CONFIG,
+  'progress-tracker': DEFAULT_PROGRESS_TRACKER_CONFIG,
+  'file-preview': DEFAULT_FILE_PREVIEW_CONFIG,
+  'api-tester': DEFAULT_API_TESTER_CONFIG,
 };
 
 export function createDefaultBlock(
@@ -70,6 +127,13 @@ export function createDefaultBlock(
       historyIndex: 0,
     }];
     config.activeTabId = tabId;
+  }
+
+  if (config.type === 'kanban') {
+    config.columns = config.columns.map((col) => ({
+      ...col,
+      id: crypto.randomUUID(),
+    }));
   }
 
   return {

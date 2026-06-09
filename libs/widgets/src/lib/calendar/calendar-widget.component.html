@@ -1,0 +1,21 @@
+<div class="cal-widget">
+  <div class="cal-header" data-drag-handle>
+    <button class="nav-btn" (pointerdown)="$event.stopPropagation()" (click)="prevMonth()">&#8249;</button>
+    <span class="month-label">{{ monthLabel }}</span>
+    <button class="nav-btn" (pointerdown)="$event.stopPropagation()" (click)="nextMonth()">&#8250;</button>
+  </div>
+  <div class="cal-grid" (pointerdown)="$event.stopPropagation()">
+    @for (wd of weekdays; track wd) {
+      <div class="cal-weekday">{{ wd }}</div>
+    }
+    @for (day of days; track $index) {
+      <div class="cal-day"
+        [class.today]="isToday(day)"
+        [class.selected]="isSelected(day)"
+        [class.empty]="!day"
+        (click)="day && selectDay(day)">
+        {{ day || '' }}
+      </div>
+    }
+  </div>
+</div>

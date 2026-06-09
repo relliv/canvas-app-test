@@ -1,0 +1,19 @@
+<div class="code-widget">
+  <div class="code-header" data-drag-handle>
+    <div class="code-title" contenteditable="true" spellcheck="false"
+      [textContent]="config.title" (blur)="onTitleChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+    <select class="lang-select" [value]="config.language"
+      (change)="onLangChange($event)" (pointerdown)="$event.stopPropagation()">
+      @for (lang of languages; track lang) {
+        <option [value]="lang">{{ lang }}</option>
+      }
+    </select>
+  </div>
+  <textarea class="code-area" spellcheck="false"
+    [value]="config.code"
+    (input)="onCodeChange($event)"
+    (pointerdown)="$event.stopPropagation()"
+    placeholder="// Write your code here..."
+  ></textarea>
+</div>

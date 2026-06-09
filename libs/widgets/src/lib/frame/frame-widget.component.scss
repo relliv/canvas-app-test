@@ -1,0 +1,80 @@
+.frame-container {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+  border: 2px dashed color-mix(in srgb, var(--frame-color, #6366f1) 40%, transparent);
+  background: color-mix(in srgb, var(--frame-color, #6366f1) 4%, transparent);
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.frame-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  pointer-events: auto;
+}
+
+.frame-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--frame-color, #6366f1) 80%, var(--text-primary));
+  outline: none;
+  cursor: text;
+  padding: 2px 4px;
+  border-radius: 4px;
+  min-width: 20px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--frame-color, #6366f1) 10%, transparent);
+  }
+
+  &:focus {
+    background: color-mix(in srgb, var(--frame-color, #6366f1) 10%, transparent);
+  }
+
+  &:empty::before {
+    content: 'Frame';
+    color: var(--text-muted);
+  }
+}
+
+.frame-colors {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  .frame-container:hover &,
+  .frame-container:focus-within & {
+    opacity: 1;
+  }
+}
+
+.frame-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  &.active {
+    opacity: 1;
+    border-color: var(--text-primary);
+  }
+}
+
+.frame-body {
+  flex: 1;
+}

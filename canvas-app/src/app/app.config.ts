@@ -12,6 +12,19 @@ import {
   StickyNoteWidgetComponent,
   TerminalWidgetComponent,
   WebBrowserWidgetComponent,
+  FrameWidgetComponent,
+  ImageWidgetComponent,
+  KanbanWidgetComponent,
+  CodeSnippetWidgetComponent,
+  MarkdownWidgetComponent,
+  ClockWidgetComponent,
+  EmbedWidgetComponent,
+  DrawingWidgetComponent,
+  ChatWidgetComponent,
+  CalendarWidgetComponent,
+  ProgressTrackerWidgetComponent,
+  FilePreviewWidgetComponent,
+  ApiTesterWidgetComponent,
 } from '@ngeenx/widgets';
 
 function registerWidgets(registry: WidgetRegistryService): () => void {
@@ -21,6 +34,19 @@ function registerWidgets(registry: WidgetRegistryService): () => void {
     registry.register('sticky-note', StickyNoteWidgetComponent);
     registry.register('terminal', TerminalWidgetComponent);
     registry.register('web-browser', WebBrowserWidgetComponent);
+    registry.register('frame', FrameWidgetComponent);
+    registry.register('image', ImageWidgetComponent);
+    registry.register('kanban', KanbanWidgetComponent);
+    registry.register('code-snippet', CodeSnippetWidgetComponent);
+    registry.register('markdown', MarkdownWidgetComponent);
+    registry.register('clock', ClockWidgetComponent);
+    registry.register('embed', EmbedWidgetComponent);
+    registry.register('drawing', DrawingWidgetComponent);
+    registry.register('chat', ChatWidgetComponent);
+    registry.register('calendar', CalendarWidgetComponent);
+    registry.register('progress-tracker', ProgressTrackerWidgetComponent);
+    registry.register('file-preview', FilePreviewWidgetComponent);
+    registry.register('api-tester', ApiTesterWidgetComponent);
   };
 }
 

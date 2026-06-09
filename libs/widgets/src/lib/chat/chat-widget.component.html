@@ -1,0 +1,24 @@
+<div class="chat-widget">
+  <div class="chat-header" data-drag-handle>
+    <div class="chat-title" contenteditable="true" spellcheck="false"
+      [textContent]="config.title" (blur)="onTitleChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+    <button class="clear-btn" (pointerdown)="$event.stopPropagation()" (click)="clearChat()">Clear</button>
+  </div>
+  <div class="chat-messages" #msgList>
+    @for (msg of config.messages; track msg.id) {
+      <div class="chat-msg" [class]="'chat-msg chat-msg--' + msg.role">
+        <span class="msg-role">{{ msg.role === 'user' ? 'You' : 'AI' }}</span>
+        <span class="msg-text">{{ msg.content }}</span>
+      </div>
+    }
+    @if (config.messages.length === 0) {
+      <div class="chat-empty">Start a conversation...</div>
+    }
+  </div>
+  <div class="chat-input-row" (pointerdown)="$event.stopPropagation()">
+    <input class="chat-input" type="text" placeholder="Type a message..."
+      [value]="inputText" (input)="onInput($event)" (keydown)="onKeydown($event)" />
+    <button class="send-btn" (click)="send()">Send</button>
+  </div>
+</div>

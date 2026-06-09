@@ -1,0 +1,28 @@
+<div class="image-widget">
+  <div class="image-header" data-drag-handle>
+    <span class="header-label">Image</span>
+  </div>
+  @if (config.url) {
+    <div class="image-body">
+      <img [src]="config.url" [style.object-fit]="config.fit" alt="" />
+    </div>
+    <div class="image-caption"
+      contenteditable="true"
+      spellcheck="false"
+      [textContent]="config.caption"
+      (blur)="onCaptionChange($event)"
+    ></div>
+  } @else {
+    <div class="image-placeholder">
+      <input
+        class="url-input"
+        type="text"
+        placeholder="Paste image URL..."
+        [value]="config.url"
+        (change)="onUrlChange($event)"
+        (keydown)="onUrlKeydown($event)"
+        (pointerdown)="$event.stopPropagation()"
+      />
+    </div>
+  }
+</div>

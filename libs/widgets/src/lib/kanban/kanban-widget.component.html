@@ -1,0 +1,31 @@
+<div class="kanban-widget">
+  <div class="kanban-header" data-drag-handle>
+    <div class="header-label" contenteditable="true" spellcheck="false"
+      [textContent]="config.title" (blur)="onBoardTitleChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+  </div>
+  <div class="kanban-body">
+    @for (col of config.columns; track col.id) {
+      <div class="kanban-col">
+        <div class="col-header">
+          <div class="col-title" contenteditable="true" spellcheck="false"
+            [textContent]="col.title" (blur)="onTitleEdit(col.id, $event)"
+            (pointerdown)="$event.stopPropagation()"></div>
+          <span class="col-count">{{ col.cards.length }}</span>
+        </div>
+        <div class="col-cards">
+          @for (card of col.cards; track card.id) {
+            <div class="kanban-card">
+              <div class="card-text" contenteditable="true" spellcheck="false"
+                [textContent]="card.text"
+                (blur)="onCardEdit(col.id, card.id, $event)"
+                (pointerdown)="$event.stopPropagation()"></div>
+              <button class="card-remove" (pointerdown)="$event.stopPropagation()" (click)="removeCard(col.id, card.id)">x</button>
+            </div>
+          }
+        </div>
+        <button class="add-card-btn" (pointerdown)="$event.stopPropagation()" (click)="addCard(col.id)">+ Add card</button>
+      </div>
+    }
+  </div>
+</div>

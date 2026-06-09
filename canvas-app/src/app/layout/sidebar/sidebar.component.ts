@@ -26,9 +26,22 @@ export class SidebarComponent {
   readonly blockTypes: WidgetOption[] = [
     { type: 'sticky-note', label: 'Note', icon: 'note' },
     { type: 'text-editor', label: 'Text', icon: 'edit' },
+    { type: 'markdown', label: 'Markdown', icon: 'markdown' },
+    { type: 'code-snippet', label: 'Code', icon: 'code' },
+    { type: 'image', label: 'Image', icon: 'image' },
     { type: 'pomodoro', label: 'Timer', icon: 'timer' },
+    { type: 'clock', label: 'Clock', icon: 'clock' },
     { type: 'terminal', label: 'Terminal', icon: 'terminal' },
     { type: 'web-browser', label: 'Browser', icon: 'browser' },
+    { type: 'embed', label: 'Embed', icon: 'embed' },
+    { type: 'kanban', label: 'Kanban', icon: 'kanban' },
+    { type: 'chat', label: 'Chat', icon: 'chat' },
+    { type: 'drawing', label: 'Draw', icon: 'drawing' },
+    { type: 'calendar', label: 'Calendar', icon: 'calendar' },
+    { type: 'progress-tracker', label: 'Tasks', icon: 'tasks' },
+    { type: 'file-preview', label: 'File', icon: 'file' },
+    { type: 'api-tester', label: 'API', icon: 'api' },
+    { type: 'frame', label: 'Frame', icon: 'frame' },
   ];
 
   addBlock(type: BlockType): void {

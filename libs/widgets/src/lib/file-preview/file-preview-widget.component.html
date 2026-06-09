@@ -1,0 +1,20 @@
+<div class="fp-widget">
+  <div class="fp-header" data-drag-handle>
+    <span class="header-label">{{ config.filename || 'File Preview' }}</span>
+  </div>
+  @if (config.url) {
+    @if (isImage) {
+      <div class="fp-body"><img [src]="config.url" alt="" /></div>
+    } @else if (isPdf) {
+      <iframe class="fp-iframe" [src]="config.url | safeFile"></iframe>
+    } @else {
+      <iframe class="fp-iframe" [src]="config.url | safeFile"></iframe>
+    }
+  } @else {
+    <div class="fp-placeholder">
+      <input class="url-input" type="text" placeholder="Paste file URL (PDF, image, etc.)..."
+        [value]="config.url" (change)="onUrlChange($event)" (keydown)="onUrlKeydown($event)"
+        (pointerdown)="$event.stopPropagation()" />
+    </div>
+  }
+</div>

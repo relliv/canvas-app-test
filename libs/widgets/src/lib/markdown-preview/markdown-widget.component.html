@@ -1,0 +1,20 @@
+<div class="md-widget">
+  <div class="md-header" data-drag-handle>
+    <div class="md-title" contenteditable="true" spellcheck="false"
+      [textContent]="config.title" (blur)="onTitleChange($event)"
+      (pointerdown)="$event.stopPropagation()"></div>
+    <button class="md-toggle" (pointerdown)="$event.stopPropagation()" (click)="toggleEdit()">
+      {{ editing() ? 'Preview' : 'Edit' }}
+    </button>
+  </div>
+  @if (editing()) {
+    <textarea class="md-editor"
+      [value]="config.content"
+      (input)="onContentChange($event)"
+      (pointerdown)="$event.stopPropagation()"
+      placeholder="Write markdown..."
+    ></textarea>
+  } @else {
+    <div class="md-preview" [innerHTML]="rendered"></div>
+  }
+</div>

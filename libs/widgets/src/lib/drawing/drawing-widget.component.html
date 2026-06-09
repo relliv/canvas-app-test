@@ -1,0 +1,25 @@
+<div class="draw-widget">
+  <div class="draw-header" data-drag-handle>
+    <span class="header-label">Drawing</span>
+    <div class="draw-tools" (pointerdown)="$event.stopPropagation()">
+      @for (c of colors; track c) {
+        <button class="color-btn" [style.background]="c" [class.active]="activeColor === c" (click)="setColor(c)"></button>
+      }
+      <span class="sep"></span>
+      @for (w of widths; track w) {
+        <button class="width-btn" [class.active]="activeWidth === w" (click)="setWidth(w)">
+          <span class="width-dot" [style.width.px]="w" [style.height.px]="w"></span>
+        </button>
+      }
+      <span class="sep"></span>
+      <button class="clear-btn" (click)="clear()">Clear</button>
+    </div>
+  </div>
+  <div class="draw-body">
+    <canvas #drawCanvas
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+    ></canvas>
+  </div>
+</div>

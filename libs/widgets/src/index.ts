@@ -4,3 +4,16 @@ export { TextEditorWidgetComponent } from './lib/text-editor/text-editor-widget.
 export { StickyNoteWidgetComponent } from './lib/sticky-note/sticky-note-widget.component';
 export { TerminalWidgetComponent } from './lib/terminal/terminal-widget.component';
 export { WebBrowserWidgetComponent } from './lib/web-browser/web-browser-widget.component';
+export { FrameWidgetComponent } from './lib/frame/frame-widget.component';
+export { ImageWidgetComponent } from './lib/image/image-widget.component';
+export { KanbanWidgetComponent } from './lib/kanban/kanban-widget.component';
+export { CodeSnippetWidgetComponent } from './lib/code-snippet/code-snippet-widget.component';
+export { MarkdownWidgetComponent } from './lib/markdown-preview/markdown-widget.component';
+export { ClockWidgetComponent } from './lib/clock/clock-widget.component';
+export { EmbedWidgetComponent } from './lib/embed/embed-widget.component';
+export { DrawingWidgetComponent } from './lib/drawing/drawing-widget.component';
+export { ChatWidgetComponent } from './lib/chat/chat-widget.component';
+export { CalendarWidgetComponent } from './lib/calendar/calendar-widget.component';
+export { ProgressTrackerWidgetComponent } from './lib/progress-tracker/progress-tracker-widget.component';
+export { FilePreviewWidgetComponent } from './lib/file-preview/file-preview-widget.component';
+export { ApiTesterWidgetComponent } from './lib/api-tester/api-tester-widget.component';

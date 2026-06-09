@@ -133,6 +133,32 @@ export class MinimapRenderer {
         return 'rgba(34, 197, 94, 0.6)';
       case 'web-browser':
         return 'rgba(6, 182, 212, 0.6)';
+      case 'frame':
+        return 'rgba(99, 102, 241, 0.15)';
+      case 'image':
+        return 'rgba(168, 85, 247, 0.6)';
+      case 'kanban':
+        return 'rgba(244, 114, 182, 0.6)';
+      case 'code-snippet':
+        return 'rgba(34, 197, 94, 0.6)';
+      case 'markdown':
+        return 'rgba(99, 102, 241, 0.5)';
+      case 'clock':
+        return 'rgba(245, 158, 11, 0.6)';
+      case 'embed':
+        return 'rgba(6, 182, 212, 0.5)';
+      case 'drawing':
+        return 'rgba(236, 72, 153, 0.6)';
+      case 'chat':
+        return 'rgba(99, 102, 241, 0.6)';
+      case 'calendar':
+        return 'rgba(245, 158, 11, 0.5)';
+      case 'progress-tracker':
+        return 'rgba(34, 197, 94, 0.5)';
+      case 'file-preview':
+        return 'rgba(161, 161, 170, 0.5)';
+      case 'api-tester':
+        return 'rgba(239, 68, 68, 0.5)';
       default:
         return 'rgba(161, 161, 170, 0.6)';
     }

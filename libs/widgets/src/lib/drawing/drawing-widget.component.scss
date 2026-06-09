@@ -1,0 +1,23 @@
+.draw-widget {
+  display: flex; flex-direction: column; width: 100%; height: 100%;
+  background: var(--bg-secondary); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.draw-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-bottom: 1px solid var(--border-default);
+}
+.header-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-right: auto; }
+.draw-tools { display: flex; align-items: center; gap: 3px; }
+.color-btn {
+  width: 16px; height: 16px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+  &.active { border-color: var(--text-primary); }
+}
+.width-btn {
+  width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  &.active { background: var(--bg-tertiary); }
+}
+.width-dot { border-radius: 50%; background: var(--text-primary); }
+.sep { width: 1px; height: 14px; background: var(--border-default); margin: 0 2px; }
+.clear-btn { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: var(--text-muted); &:hover { background: var(--bg-tertiary); color: var(--text-primary); } }
+.draw-body { flex: 1; cursor: crosshair; canvas { display: block; } }

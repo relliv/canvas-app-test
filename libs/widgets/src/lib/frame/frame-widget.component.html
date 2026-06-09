@@ -1,0 +1,27 @@
+<div
+  class="frame-container"
+  [style.--frame-color]="config.color"
+>
+  <div class="frame-header" data-drag-handle>
+    <div
+      class="frame-title"
+      contenteditable="true"
+      spellcheck="false"
+      [textContent]="config.title"
+      (blur)="onTitleChange($event)"
+      (keydown.enter)="onTitleEnter($any($event))"
+    ></div>
+    <div class="frame-colors" (pointerdown)="$event.stopPropagation()">
+      @for (c of colors; track c.value) {
+        <button
+          class="frame-color-dot"
+          [style.background-color]="c.value"
+          [class.active]="config.color === c.value"
+          [title]="c.label"
+          (click)="onColorChange(c.value)"
+        ></button>
+      }
+    </div>
+  </div>
+  <div class="frame-body"></div>
+</div>
