@@ -9,12 +9,60 @@ import {
   OnDestroy,
   inject,
 } from '@angular/core';
-import { Terminal } from '@xterm/xterm';
+import { Terminal, ITheme } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { LucideTerminal } from '@lucide/angular';
 import { Block, TerminalConfig } from '@ngeenx/shared-models';
 import { WorkspaceStateService } from '@ngeenx/state';
+
+const DARK_THEME: ITheme = {
+  background: '#1a1a1e',
+  foreground: '#e4e4e7',
+  cursor: '#6366f1',
+  cursorAccent: '#1a1a1e',
+  selectionBackground: 'rgba(99, 102, 241, 0.3)',
+  black: '#27272a',
+  red: '#ef4444',
+  green: '#22c55e',
+  yellow: '#f59e0b',
+  blue: '#6366f1',
+  magenta: '#a855f7',
+  cyan: '#06b6d4',
+  white: '#e4e4e7',
+  brightBlack: '#71717a',
+  brightRed: '#f87171',
+  brightGreen: '#4ade80',
+  brightYellow: '#fbbf24',
+  brightBlue: '#818cf8',
+  brightMagenta: '#c084fc',
+  brightCyan: '#22d3ee',
+  brightWhite: '#fafafa',
+};
+
+const LIGHT_THEME: ITheme = {
+  background: '#ffffff',
+  foreground: '#1e1e2e',
+  cursor: '#6366f1',
+  cursorAccent: '#ffffff',
+  selectionBackground: 'rgba(99, 102, 241, 0.2)',
+  black: '#52525b',
+  red: '#dc2626',
+  green: '#16a34a',
+  yellow: '#ca8a04',
+  blue: '#4f46e5',
+  magenta: '#9333ea',
+  cyan: '#0891b2',
+  white: '#18181b',
+  brightBlack: '#a1a1aa',
+  brightRed: '#ef4444',
+  brightGreen: '#22c55e',
+  brightYellow: '#eab308',
+  brightBlue: '#6366f1',
+  brightMagenta: '#a855f7',
+  brightCyan: '#06b6d4',
+  brightWhite: '#09090b',
+};
 
 const PROMPT = '\x1b[32m$ \x1b[0m';
 
@@ -79,6 +127,7 @@ export class TerminalWidgetComponent implements AfterViewInit, OnDestroy {
   private commandHistory: string[] = [];
   private historyIndex = -1;
   private resizeObserver!: ResizeObserver;
+  private themeObserver!: MutationObserver;
 
   get config(): TerminalConfig {
     return this.block.config as TerminalConfig;
@@ -87,35 +136,14 @@ export class TerminalWidgetComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.commandHistory = [...(this.config.history || [])];
 
+    const currentTheme = this.getCurrentTheme();
+
     this.terminal = new Terminal({
       fontSize: this.config.fontSize,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-      theme: {
-        background: 'transparent',
-        foreground: '#e4e4e7',
-        cursor: '#6366f1',
-        cursorAccent: '#1a1a1e',
-        selectionBackground: 'rgba(99, 102, 241, 0.3)',
-        black: '#27272a',
-        red: '#ef4444',
-        green: '#22c55e',
-        yellow: '#f59e0b',
-        blue: '#6366f1',
-        magenta: '#a855f7',
-        cyan: '#06b6d4',
-        white: '#e4e4e7',
-        brightBlack: '#71717a',
-        brightRed: '#f87171',
-        brightGreen: '#4ade80',
-        brightYellow: '#fbbf24',
-        brightBlue: '#818cf8',
-        brightMagenta: '#c084fc',
-        brightCyan: '#22d3ee',
-        brightWhite: '#fafafa',
-      },
+      theme: currentTheme === 'light' ? LIGHT_THEME : DARK_THEME,
       cursorBlink: true,
       cursorStyle: 'bar',
-      allowTransparency: true,
       scrollback: 1000,
       convertEol: true,
     });
@@ -144,6 +172,20 @@ export class TerminalWidgetComponent implements AfterViewInit, OnDestroy {
       });
     });
     this.resizeObserver.observe(this.terminalRef.nativeElement);
+
+    this.themeObserver = new MutationObserver(() => {
+      const theme = this.getCurrentTheme();
+      this.terminal.options.theme = { ...(theme === 'light' ? LIGHT_THEME : DARK_THEME) };
+      this.terminal.refresh(0, this.terminal.rows - 1);
+    });
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+  }
+
+  private getCurrentTheme(): string {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
   }
 
   private handleKey(key: string, e: KeyboardEvent): void {
@@ -272,6 +314,7 @@ export class TerminalWidgetComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.themeObserver?.disconnect();
     this.resizeObserver?.disconnect();
     this.terminal?.dispose();
   }
