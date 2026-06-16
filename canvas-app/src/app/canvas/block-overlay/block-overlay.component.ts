@@ -95,7 +95,8 @@ export class BlockOverlayComponent {
     if (e.button !== 0) return;
 
     const target = e.target as HTMLElement;
-    const isDragHandle = !!target.closest('[data-drag-handle]');
+    const isFrame = this.block.type === 'frame';
+    const isDragHandle = isFrame || !!target.closest('[data-drag-handle]');
 
     if (this.isFocused && !isDragHandle) {
       e.stopPropagation();

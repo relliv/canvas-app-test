@@ -23,13 +23,6 @@
     <div class="content-shield"></div>
   }
 
-  @if (block.type === 'frame') {
-    <div class="frame-edge frame-edge--top" data-drag-handle></div>
-    <div class="frame-edge frame-edge--right" data-drag-handle></div>
-    <div class="frame-edge frame-edge--bottom" data-drag-handle></div>
-    <div class="frame-edge frame-edge--left" data-drag-handle></div>
-  }
-
   <cw-block-host [block]="block" />
 
   @if (isSelected || isHovered) {

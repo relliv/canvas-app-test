@@ -15,7 +15,8 @@ export class Viewport {
 
   private _targetOffset: Vector2 = { x: 0, y: 0 };
   private _targetZoom = 1;
-  private _zoomFocal: Vector2 = { x: 0, y: 0 };
+  private _zoomFocalScreen: Vector2 = { x: 0, y: 0 };
+  private _zoomFocalWorld: Vector2 = { x: 0, y: 0 };
   private _useZoomFocal = false;
   private _velocity: Vector2 = { x: 0, y: 0 };
 
@@ -72,7 +73,8 @@ export class Viewport {
 
   // Animated zoom toward a focal point
   zoomAt(focalScreenPoint: Vector2, zoomDelta: number): void {
-    this._zoomFocal = focalScreenPoint;
+    this._zoomFocalScreen = focalScreenPoint;
+    this._zoomFocalWorld = this.screenToWorld(focalScreenPoint);
     this._useZoomFocal = true;
     this._targetZoom = this.clampZoom(this._targetZoom * (1 + zoomDelta));
     this.startLoop();
@@ -80,10 +82,12 @@ export class Viewport {
 
   // Animated zoom to absolute value (toolbar buttons)
   setZoom(zoom: number): void {
-    this._zoomFocal = {
+    const center: Vector2 = {
       x: this._canvasSize.width / 2,
       y: this._canvasSize.height / 2,
     };
+    this._zoomFocalScreen = center;
+    this._zoomFocalWorld = this.screenToWorld(center);
     this._useZoomFocal = true;
     this._targetZoom = this.clampZoom(zoom);
     this.startLoop();
@@ -94,11 +98,7 @@ export class Viewport {
     this._targetOffset = { ...offset };
     if (zoom !== undefined) {
       this._targetZoom = this.clampZoom(zoom);
-      this._zoomFocal = {
-        x: this._canvasSize.width / 2,
-        y: this._canvasSize.height / 2,
-      };
-      this._useZoomFocal = true;
+      this._useZoomFocal = false;
     }
     this.startLoop();
   }
@@ -141,22 +141,20 @@ export class Viewport {
     // zoom lerp
     const zoomDiff = this._targetZoom - this._zoom;
     if (Math.abs(zoomDiff) > ZOOM_SNAP) {
+      this._zoom += zoomDiff * LERP;
       if (this._useZoomFocal) {
-        const prevZoom = this._zoom;
-        this._zoom += zoomDiff * LERP;
-        const worldFocal = {
-          x: (this._zoomFocal.x - this._offset.x) / prevZoom,
-          y: (this._zoomFocal.y - this._offset.y) / prevZoom,
-        };
-        this._offset.x = this._zoomFocal.x - worldFocal.x * this._zoom;
-        this._offset.y = this._zoomFocal.y - worldFocal.y * this._zoom;
+        this._offset.x = this._zoomFocalScreen.x - this._zoomFocalWorld.x * this._zoom;
+        this._offset.y = this._zoomFocalScreen.y - this._zoomFocalWorld.y * this._zoom;
         this._targetOffset = { ...this._offset };
-      } else {
-        this._zoom += zoomDiff * LERP;
       }
       settled = false;
     } else if (Math.abs(zoomDiff) > 0) {
       this._zoom = this._targetZoom;
+      if (this._useZoomFocal) {
+        this._offset.x = this._zoomFocalScreen.x - this._zoomFocalWorld.x * this._zoom;
+        this._offset.y = this._zoomFocalScreen.y - this._zoomFocalWorld.y * this._zoom;
+        this._targetOffset = { ...this._offset };
+      }
     }
 
     // offset lerp

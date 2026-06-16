@@ -21,8 +21,7 @@
   }
 
   &.is-frame {
-    pointer-events: none;
-    cursor: default;
+    cursor: grab;
     border-color: transparent;
   }
 }
@@ -32,38 +31,6 @@
   inset: 0;
   z-index: 1;
   border-radius: var(--radius-md);
-}
-
-.frame-edge {
-  position: absolute;
-  pointer-events: auto;
-  cursor: grab;
-  z-index: 2;
-
-  &--top {
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-  }
-  &--bottom {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-  }
-  &--left {
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 12px;
-  }
-  &--right {
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-  }
 }
 
 .resize-handle {
